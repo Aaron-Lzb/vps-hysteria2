@@ -3,3 +3,10 @@
 .env
 .DS_Store
 *.log
+
+# AWS credentials
+.aws/
+
+# SSH keys
+*.pub
+id_rsa*
