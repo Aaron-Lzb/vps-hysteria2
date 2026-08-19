@@ -1,5 +1,6 @@
-# AWS Hysteria2 Shadowrocket
+# VPS Hysteria2 Shadowrocket
 
+[![Release](https://img.shields.io/github/v/release/Aaron-Lzb/vps-hysteria2-shadowrocket)](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/releases)
 A private and self-managed VPN deployment solution based on AWS EC2, Hysteria2, TLS encryption, and Shadowrocket intelligent routing.
 
 This project provides a simple, reproducible approach to build a personal VPN infrastructure with:
