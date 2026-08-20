@@ -218,10 +218,12 @@ load new certificate
 Run the status helper on the server:
 
 ```bash
-sudo bash scripts/check-status.sh YOUR_DOMAIN
+bash scripts/check-status.sh YOUR_DOMAIN
 ```
 
-It reports PASS or FAIL for the systemd service, UDP 443 listener, Certbot certificate information, and DNS resolution. Missing diagnostic commands are reported clearly.
+The read-only helper reports service and local UDP 443 state, TLS certificate lifetime, Certbot renewal timer state, pending Ubuntu security updates, reboot status, root filesystem use, OS and installed Hysteria2 versions, and optional DNS resolution. It never renews certificates, installs updates, restarts services, or changes configuration. Root is not required, but `sudo` may reveal certificate or service details that the current user cannot read.
+
+`HEALTHY` exits with status 0; `ATTENTION REQUIRED` and `CRITICAL` exit with status 1. UDP 443 listening confirms only that the server appears to be listening locally. It does not prove full client-to-server connectivity or validate cloud-firewall rules.
 
 ## Documentation
 

@@ -150,10 +150,10 @@ sudo systemctl status hysteria-server
 ### 6. 检查状态
 
 ```bash
-sudo bash scripts/check-status.sh YOUR_DOMAIN
+bash scripts/check-status.sh YOUR_DOMAIN
 ```
 
-脚本会检查 Hysteria2 服务、UDP 443 监听、Certbot 证书信息和 DNS 解析。
+脚本以只读方式检查 Hysteria2 服务、本机 UDP 443 监听、TLS 证书剩余时间、Certbot 续期定时器、安全更新、重启状态、根文件系统用量、系统和 Hysteria2 版本，以及可选的 DNS 解析。它不会续期证书、安装更新、重启服务或修改配置。无需 root 权限，但使用 `sudo` 可能读取到普通用户无权查看的证书或服务信息。
 
 ## 客户端配置
 
@@ -246,8 +246,10 @@ Certbot 续期成功
 ## 状态检查
 
 ```bash
-sudo bash scripts/check-status.sh YOUR_DOMAIN
+bash scripts/check-status.sh YOUR_DOMAIN
 ```
+
+`HEALTHY` 的退出状态为 0；`ATTENTION REQUIRED` 和 `CRITICAL` 的退出状态为 1。本机存在 UDP 443 监听只说明服务器套接字正常，不能证明云防火墙已放行或客户端能够端到端连接。
 
 遇到问题时按以下顺序检查：
 

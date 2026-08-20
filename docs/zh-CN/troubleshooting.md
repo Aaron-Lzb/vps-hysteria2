@@ -44,10 +44,12 @@ TLS 与认证配置
 先运行只读状态检查：
 
 ```bash
-sudo bash scripts/check-status.sh YOUR_DOMAIN
+bash scripts/check-status.sh YOUR_DOMAIN
 ```
 
-它会检查 systemd 服务、UDP 443 监听、Certbot 证书信息和 DNS 解析。某项显示 FAIL 时，继续阅读对应章节。
+它以只读方式检查 systemd 服务、本机 UDP 443 监听、配置所用 TLS 证书的剩余时间、Certbot 续期定时器、Ubuntu 安全更新、重启标记、根文件系统用量、系统版本、已安装的 Hysteria2 版本，以及可选的 DNS 解析。它不会修复、续期、更新、重启或修改服务器。无需 root 权限；如果证书或 systemd 信息不可读，可使用 `sudo` 重新运行。
+
+`HEALTHY` 的退出状态为 0，`ATTENTION REQUIRED` 和 `CRITICAL` 的退出状态为 1。UDP 结果只检查本机套接字；还需要确认云平台与主机防火墙规则，并从客户端测试，才能证明端到端可达。
 
 ## 1. Hysteria2 服务启动失败
 
@@ -383,7 +385,7 @@ sudo certbot renew --dry-run
 dig YOUR_DOMAIN
 
 # 项目综合检查
-sudo bash scripts/check-status.sh YOUR_DOMAIN
+bash scripts/check-status.sh YOUR_DOMAIN
 ```
 
 ## 10. 安全检查清单
