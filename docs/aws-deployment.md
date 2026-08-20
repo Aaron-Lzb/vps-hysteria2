@@ -136,8 +136,10 @@ sudo ss -ulnp | grep 443
 You can also use the project health check:
 
 ```bash
-sudo bash scripts/check-status.sh YOUR_DOMAIN
+hysteria-check
 ```
+
+The installer makes this command available globally and normally detects the public IPv4 automatically. If detection fails, run `hysteria-check <PUBLIC_IP>`. Use `sudo hysteria-check` when certificate permissions prevent a complete TLS check.
 
 If the service listens locally but clients time out, recheck the Security Group, any subnet network ACL, the instance firewall, and the client's current network.
 

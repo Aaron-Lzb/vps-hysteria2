@@ -29,11 +29,11 @@ AWS EC2 是最初并持续保留的 VPS 测试参考，不是必需基础设施�
 
 ## 项目状态
 
-当前版本：**v1.3.0**
+当前版本：**v1.4.0**
 
-**v1.3.0 - 客户端中立化项目定位** 将项目身份从 `vps-hysteria2-shadowrocket` 调整为 `vps-hysteria2`，明确以 Hysteria2 服务端部署为核心，并扩展多客户端说明。
+**v1.4.0 - 全局维护命令** 会把只读状态检查安装为 `hysteria-check`，日常维护无需先进入项目目录。命令通常会自动检测 VPS 公网 IPv4，也保留手工传入地址的方式。
 
-本次调整不改变服务端脚本、Hysteria2 配置行为、systemd、TLS 续期、CI 或现有 Shadowrocket 示例。v1.2.0 及以前的发布历史保持不变。
+v1.3.0 的客户端中立化定位及此前发布历史保持不变。
 
 ## 项目特点
 
@@ -41,7 +41,7 @@ AWS EC2 是最初并持续保留的 VPS 测试参考，不是必需基础设施�
 - 使用 QUIC、UDP 443 和 TLS
 - 使用 systemd 管理开机启动和异常恢复
 - 使用 Certbot 管理证书及续期钩子
-- 提供服务、端口、证书和 DNS 状态检查
+- 提供全局 `hysteria-check` 只读维护检查
 - 服务端配置不绑定 VPS 提供商或客户端品牌
 - 保留经过项目维护的 Shadowrocket 分流示例
 - 提供中英文部署和排错文档
@@ -104,7 +104,7 @@ AWS 用户可参考[中文 VPS 部署指南](docs/zh-CN/vps-deployment.md)。
 sudo bash scripts/install-hysteria.sh
 ```
 
-安装脚本会检查 root 权限和 Ubuntu 环境，并保留已有配置及 systemd 服务文件。
+安装脚本会检查 root 权限和 Ubuntu 环境，保留已有配置及 systemd 服务文件，并安装独立的 `/usr/local/bin/hysteria-check` 副本；之后移动或删除仓库副本不会破坏该命令。
 
 ### 3. 准备服务端配置
 
@@ -150,10 +150,16 @@ sudo systemctl status hysteria-server
 ### 6. 检查状态
 
 ```bash
-bash scripts/check-status.sh YOUR_DOMAIN
+hysteria-check
 ```
 
-脚本以只读方式检查 Hysteria2 服务、本机 UDP 443 监听、TLS 证书剩余时间、Certbot 续期定时器、安全更新、重启状态、根文件系统用量、系统和 Hysteria2 版本，以及可选的 DNS 解析。它不会续期证书、安装更新、重启服务或修改配置。无需 root 权限，但使用 `sudo` 可能读取到普通用户无权查看的证书或服务信息。
+命令通常会通过简短的只读 HTTPS 请求自动检测公网 IPv4。检测失败时可手工提供：
+
+```bash
+hysteria-check <PUBLIC_IP>
+```
+
+脚本会拒绝私网和特殊用途 IPv4，并以只读方式检查 Hysteria2 服务、本机 UDP 443 监听、TLS 证书剩余时间、Certbot 续期定时器、安全更新、重启状态、根文件系统用量、系统和 Hysteria2 版本，以及公网 IP 或可选 DNS 信息。它不会续期证书、安装更新、重启服务或修改配置。无需 root 权限，但 `sudo hysteria-check` 可能读取到普通用户无权查看的证书或服务信息。
 
 ## 客户端配置
 
@@ -246,7 +252,25 @@ Certbot 续期成功
 ## 状态检查
 
 ```bash
-bash scripts/check-status.sh YOUR_DOMAIN
+hysteria-check
+```
+
+自动检测不可用时：
+
+```bash
+hysteria-check <PUBLIC_IP>
+```
+
+仓库开发和尚未重新运行安装脚本的已有部署仍可使用：
+
+```bash
+bash scripts/check-status.sh <PUBLIC_IP>
+```
+
+已有仓库副本也可以只安装或更新全局命令，无需重新运行完整的 Hysteria2 安装流程：
+
+```bash
+sudo install -m 0755 scripts/check-status.sh /usr/local/bin/hysteria-check
 ```
 
 `HEALTHY` 的退出状态为 0；`ATTENTION REQUIRED` 和 `CRITICAL` 的退出状态为 1。本机存在 UDP 443 监听只说明服务器套接字正常，不能证明云防火墙已放行或客户端能够端到端连接。

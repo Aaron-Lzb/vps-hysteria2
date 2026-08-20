@@ -15,10 +15,12 @@ This document summarizes common issues and solutions for the Hysteria2 encrypted
 Run the diagnostic-only server helper:
 
 ```bash
-bash scripts/check-status.sh YOUR_DOMAIN
+hysteria-check
 ```
 
-It checks the Hysteria2 service, local UDP 443 listener, configured TLS certificate lifetime, Certbot renewal timer, pending Ubuntu security updates, reboot marker, root filesystem use, OS version, installed Hysteria2 version, and optional DNS resolution. It does not repair, renew, update, restart, or otherwise change the server. Root is not required; rerun with `sudo` if certificate or systemd details are unreadable.
+The installer provides this command globally, so it works outside the repository directory. It normally detects the VPS public IPv4 automatically. If detection fails, use `hysteria-check <PUBLIC_IP>`. The repository entry point `bash scripts/check-status.sh <PUBLIC_IP>` remains available for development and older deployments.
+
+It checks the Hysteria2 service, local UDP 443 listener, configured TLS certificate lifetime, Certbot renewal timer, pending Ubuntu security updates, reboot marker, root filesystem use, OS version, installed Hysteria2 version, and public-IP or optional DNS information. It does not repair, renew, update, restart, or otherwise change the server. Root is not required; rerun with `sudo hysteria-check` if certificate or systemd details are unreadable.
 
 `HEALTHY` exits 0, while `ATTENTION REQUIRED` and `CRITICAL` exit 1. UDP 443 listening confirms only that the server appears to be listening locally. It does not prove full client-to-server connectivity. Confirm VPS-provider and host firewall rules, then test from a client to establish end-to-end reachability.
 

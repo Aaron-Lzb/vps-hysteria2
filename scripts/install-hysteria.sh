@@ -12,10 +12,15 @@ readonly SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 readonly CONFIG_DIR="/etc/hysteria"
 readonly CONFIG_FILE="${CONFIG_DIR}/config.yaml"
 readonly INSTALLER_URL="https://get.hy2.sh/"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR
+readonly CHECK_SCRIPT="${SCRIPT_DIR}/check-status.sh"
+readonly CHECK_COMMAND="/usr/local/bin/hysteria-check"
 
 installer_file=""
 service_template=""
 config_existed_before=0
+check_script_available=0
 
 cleanup() {
   if [[ -n "${installer_file}" && -f "${installer_file}" ]]; then
@@ -71,15 +76,22 @@ for required_command in apt-get systemctl mktemp install; do
   fi
 done
 
-printf '\n[1/5] Refreshing package metadata...\n'
+if [[ -r ${CHECK_SCRIPT} ]]; then
+  check_script_available=1
+else
+  printf '[WARN] Maintenance script is missing from the checkout: %s\n' "${CHECK_SCRIPT}" >&2
+  printf '[WARN] Hysteria2 installation will continue, but hysteria-check cannot be installed.\n' >&2
+fi
+
+printf '\n[1/6] Refreshing package metadata...\n'
 apt-get update
 
-printf '\n[2/5] Installing required packages...\n'
+printf '\n[2/6] Installing required packages...\n'
 # Do not run a full distribution upgrade here. Operators should review system
 # upgrades separately so this installer does not make unrelated package changes.
 DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates certbot curl dnsutils iproute2 wget
 
-printf '\n[3/5] Installing Hysteria2 with the upstream installer...\n'
+printf '\n[3/6] Installing Hysteria2 with the upstream installer...\n'
 if [[ -e "${CONFIG_FILE}" ]]; then
   config_existed_before=1
 fi
@@ -94,7 +106,7 @@ if ! command -v hysteria >/dev/null 2>&1 && [[ ! -x /usr/local/bin/hysteria ]]; 
   exit 1
 fi
 
-printf '\n[4/5] Preparing the configuration directory...\n'
+printf '\n[4/6] Preparing the configuration directory...\n'
 install -d -m 0755 "${CONFIG_DIR}"
 
 if [[ ${config_existed_before} -eq 1 ]]; then
@@ -106,7 +118,7 @@ else
   printf '[INFO] No configuration was created. Copy and edit the repository example before starting the service.\n'
 fi
 
-printf '\n[5/5] Preparing the systemd service...\n'
+printf '\n[5/6] Preparing the systemd service...\n'
 if [[ -e "${SERVICE_FILE}" ]]; then
   printf '[WARN] Preserving existing systemd unit: %s\n' "${SERVICE_FILE}"
   printf '[WARN] Compare it manually with configs/systemd/hysteria-server.service if an update is needed.\n'
@@ -136,6 +148,21 @@ fi
 systemctl daemon-reload
 systemctl enable "${SERVICE_NAME}"
 
+printf '\n[6/6] Installing the maintenance command...\n'
+# Install a standalone copy so the command keeps working if the repository
+# checkout is later moved or removed. Re-running the installer safely refreshes
+# the project-managed copy without creating another command or symlink.
+if [[ ${check_script_available} -eq 1 ]]; then
+  install -m 0755 "${CHECK_SCRIPT}" "${CHECK_COMMAND}"
+  if [[ ! -x ${CHECK_COMMAND} ]]; then
+    printf '[ERROR] Maintenance command was not installed correctly: %s\n' "${CHECK_COMMAND}" >&2
+    exit 1
+  fi
+  printf '[PASS] Installed maintenance command: %s\n' "${CHECK_COMMAND}"
+else
+  printf '[WARN] Skipped hysteria-check because the source script was unavailable.\n'
+fi
+
 printf '\nInstallation preparation completed.\n'
 printf '\nNext steps:\n'
 printf '1. Obtain a TLS certificate for YOUR_DOMAIN with Certbot.\n'
@@ -147,4 +174,7 @@ printf '   sudo systemctl start %s\n' "${SERVICE_NAME}"
 printf '   sudo systemctl status %s\n' "${SERVICE_NAME}"
 printf '6. Install scripts/restart-hysteria-after-renew.sh under:\n'
 printf '   /etc/letsencrypt/renewal-hooks/deploy/\n'
-printf '7. Verify the deployment with: sudo bash scripts/check-status.sh YOUR_DOMAIN\n'
+printf '7. Verify the deployment with: hysteria-check\n'
+printf '\nMaintenance check:\n'
+printf 'hysteria-check\n'
+printf 'If automatic public-IP detection fails: hysteria-check <PUBLIC_IP>\n'

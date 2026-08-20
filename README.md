@@ -29,11 +29,11 @@ AWS EC2 is the original tested VPS reference. It is not required infrastructure;
 
 ## Status
 
-Current version: **v1.3.0**
+Current version: **v1.4.0**
 
-**v1.3.0 - Client-Neutral Project Repositioning** renames the project identity from `vps-hysteria2-shadowrocket` to `vps-hysteria2` and presents Hysteria2 as the core server deployment. It expands client guidance without changing server scripts, configuration behavior, systemd, TLS renewal, validation, or the existing Shadowrocket example.
+**v1.4.0 - Global Maintenance Command** installs the read-only status helper as `hysteria-check`, so routine checks work from any directory. The command normally detects the VPS public IPv4 automatically and retains an optional manual form.
 
-The existing v1.2.0 release and its history remain unchanged.
+The v1.3.0 client-neutral positioning and all earlier release history remain unchanged.
 
 ## Features
 
@@ -41,7 +41,7 @@ The existing v1.2.0 release and its history remain unchanged.
 - QUIC transport over UDP 443 with TLS
 - systemd startup and failure recovery
 - Certbot certificate renewal with a deploy hook
-- Read-only service, port, certificate, and DNS status checks
+- Global `hysteria-check` command for read-only maintenance diagnostics
 - Provider-neutral server configuration
 - Client-neutral connection model
 - Maintained Shadowrocket split-routing example
@@ -112,7 +112,7 @@ Run the installer as root from a trusted checkout:
 sudo bash scripts/install-hysteria.sh
 ```
 
-The installer preserves existing Hysteria2 configuration and systemd unit files. Review its printed next steps before starting the service.
+The installer preserves existing Hysteria2 configuration and systemd unit files. It also installs a standalone `/usr/local/bin/hysteria-check` copy that does not depend on keeping the repository checkout. Review the printed next steps before starting the service.
 
 ### 3. Configure the server
 
@@ -218,10 +218,28 @@ load new certificate
 Run the status helper on the server:
 
 ```bash
-bash scripts/check-status.sh YOUR_DOMAIN
+hysteria-check
 ```
 
-The read-only helper reports service and local UDP 443 state, TLS certificate lifetime, Certbot renewal timer state, pending Ubuntu security updates, reboot status, root filesystem use, OS and installed Hysteria2 versions, and optional DNS resolution. It never renews certificates, installs updates, restarts services, or changes configuration. Root is not required, but `sudo` may reveal certificate or service details that the current user cannot read.
+The public IPv4 is normally detected automatically through short, read-only HTTPS requests. If detection is unavailable, provide the address explicitly:
+
+```bash
+hysteria-check <PUBLIC_IP>
+```
+
+The helper rejects private and special-use IPv4 ranges. It reports service and local UDP 443 state, TLS certificate lifetime, Certbot renewal timer state, pending Ubuntu security updates, reboot status, root filesystem use, OS and installed Hysteria2 versions, and public-IP or optional DNS information. It never renews certificates, installs updates, restarts services, or changes configuration. Root is not required, but `sudo hysteria-check` may reveal certificate or service details that the current user cannot read.
+
+For repository development or an existing deployment that has not rerun the installer, the original entry point remains supported:
+
+```bash
+bash scripts/check-status.sh <PUBLIC_IP>
+```
+
+An existing checkout can install or refresh only the global command without rerunning the full Hysteria2 installer:
+
+```bash
+sudo install -m 0755 scripts/check-status.sh /usr/local/bin/hysteria-check
+```
 
 `HEALTHY` exits with status 0; `ATTENTION REQUIRED` and `CRITICAL` exit with status 1. UDP 443 listening confirms only that the server appears to be listening locally. It does not prove full client-to-server connectivity or validate cloud-firewall rules.
 

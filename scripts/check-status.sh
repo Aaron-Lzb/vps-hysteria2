@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # Run read-only maintenance checks for a Hysteria2 server.
-# Usage: bash scripts/check-status.sh [YOUR_DOMAIN]
+# Installed usage: hysteria-check [PUBLIC_IP]
+# Repository usage: bash scripts/check-status.sh [PUBLIC_IP_OR_DOMAIN]
 #
 # The script never restarts services, renews certificates, refreshes package
 # metadata, installs updates, or changes configuration. Root is not required,
@@ -12,7 +13,7 @@ set -uo pipefail
 readonly SERVICE_NAME="hysteria-server"
 readonly CONFIG_FILE="/etc/hysteria/config.yaml"
 readonly HYSTERIA_BINARY="/usr/local/bin/hysteria"
-readonly DOMAIN="${1:-YOUR_DOMAIN}"
+readonly TARGET="${1:-}"
 readonly TLS_WARNING_DAYS=30
 readonly DISK_WARNING_PERCENT=80
 readonly DISK_CRITICAL_PERCENT=90
@@ -90,6 +91,84 @@ date_to_epoch() {
     printf '%s\n' "${epoch}"
     return 0
   fi
+
+  return 1
+}
+
+is_ipv4() {
+  local address=$1
+  local -a address_octets
+  local octet
+  local octet_value
+
+  [[ ${address} =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] || return 1
+
+  IFS=. read -r -a address_octets <<<"${address}"
+  for octet in "${address_octets[@]}"; do
+    octet_value=$((10#${octet}))
+    [[ ${octet_value} -le 255 ]] || return 1
+  done
+}
+
+# Reject private, link-local, documentation, benchmark, multicast, and other
+# special-use ranges so a cloud-provider private address is never accepted as
+# the VPS public IPv4 address.
+is_public_ipv4() {
+  local address=$1
+  local -a address_octets
+  local first
+  local second
+  local third
+
+  is_ipv4 "${address}" || return 1
+  IFS=. read -r -a address_octets <<<"${address}"
+  first=$((10#${address_octets[0]}))
+  second=$((10#${address_octets[1]}))
+  third=$((10#${address_octets[2]}))
+
+  ((first != 0 && first != 10 && first != 127 && first < 224)) || return 1
+  ((first != 100 || second < 64 || second > 127)) || return 1
+  ((first != 169 || second != 254)) || return 1
+  ((first != 172 || second < 16 || second > 31)) || return 1
+  ((first != 192 || second != 0 || (third != 0 && third != 2))) || return 1
+  ((first != 192 || second != 88 || third != 99)) || return 1
+  ((first != 192 || second != 168)) || return 1
+  ((first != 198 || (second != 18 && second != 19))) || return 1
+  ((first != 198 || second != 51 || third != 100)) || return 1
+  ((first != 203 || second != 0 || third != 113)) || return 1
+}
+
+fetch_public_ipv4() {
+  local endpoint=$1
+
+  if command -v curl >/dev/null 2>&1; then
+    if curl --ipv4 --fail --silent --connect-timeout 2 --max-time 3 "${endpoint}" 2>/dev/null; then
+      return 0
+    fi
+  fi
+
+  if command -v wget >/dev/null 2>&1; then
+    if wget -4 --quiet --timeout=3 --tries=1 --output-document=- "${endpoint}" 2>/dev/null; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+detect_public_ipv4() {
+  local candidate
+  local endpoint
+
+  for endpoint in "https://api.ipify.org" "https://checkip.amazonaws.com"; do
+    if candidate="$(fetch_public_ipv4 "${endpoint}")"; then
+      candidate="$(tr -d '[:space:]' <<<"${candidate}")"
+      if is_public_ipv4 "${candidate}"; then
+        printf '%s\n' "${candidate}"
+        return 0
+      fi
+    fi
+  done
 
   return 1
 }
@@ -288,19 +367,28 @@ else
   info "Hysteria2 version: installed, but the version could not be determined."
 fi
 
-# 10. Optional DNS check retained for compatibility with the existing helper.
-if [[ ${DOMAIN} == "YOUR_DOMAIN" ]]; then
-  info "DNS resolution: skipped; pass YOUR_DOMAIN as the first argument to check it."
-elif ! command -v dig >/dev/null 2>&1; then
-  warn "DNS resolution: unable to check ${DOMAIN} because dig is unavailable."
-elif dns_output="$(dig +short "${DOMAIN}" 2>/dev/null)"; then
-  if [[ -n ${dns_output} ]]; then
-    pass "DNS resolution: ${DOMAIN} returned a record."
+# 10. Detect or validate the public IPv4. Domain arguments retain the existing
+# DNS-resolution behavior for backward compatibility.
+if [[ -z ${TARGET} ]]; then
+  if detect_public_ipv4 >/dev/null; then
+    pass "Public IPv4: detected automatically."
   else
-    critical "DNS resolution: ${DOMAIN} returned no records."
+    critical "Public IPv4: automatic detection failed. Run: hysteria-check <PUBLIC_IP>"
+  fi
+elif is_public_ipv4 "${TARGET}"; then
+  pass "Public IPv4: the manually supplied address is valid."
+elif is_ipv4 "${TARGET}" || [[ ${TARGET} =~ ^[0-9.]+$ ]]; then
+  critical "Public IPv4: the supplied address is invalid or not publicly routable."
+elif ! command -v dig >/dev/null 2>&1; then
+  warn "DNS resolution: unable to check the supplied domain because dig is unavailable."
+elif dns_output="$(dig +short "${TARGET}" 2>/dev/null)"; then
+  if [[ -n ${dns_output} ]]; then
+    pass "DNS resolution: the supplied domain returned a record."
+  else
+    critical "DNS resolution: the supplied domain returned no records."
   fi
 else
-  critical "DNS resolution: lookup failed for ${DOMAIN}."
+  critical "DNS resolution: lookup failed for the supplied domain."
 fi
 
 printf '\n'

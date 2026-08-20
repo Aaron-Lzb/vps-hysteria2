@@ -308,8 +308,10 @@ Mihomo/Clash.Meta 兼容客户端可以在当前内核明确支持 Hysteria2 时
 运行项目状态脚本：
 
 ```bash
-sudo bash scripts/check-status.sh YOUR_DOMAIN
+hysteria-check
 ```
+
+安装脚本会全局安装该命令，并通常自动检测公网 IPv4。自动检测失败时运行 `hysteria-check <PUBLIC_IP>`；证书权限导致 TLS 信息不可读时，可运行 `sudo hysteria-check`。
 
 手工检查清单：
 
