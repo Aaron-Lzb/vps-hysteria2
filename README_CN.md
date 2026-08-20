@@ -1,135 +1,102 @@
-# VPS Hysteria2 Shadowrocket
+# VPS Hysteria2
 
 [English](README.md) | 简体中文
 
-[![Release](https://img.shields.io/github/v/release/Aaron-Lzb/vps-hysteria2-shadowrocket)](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/releases)
-[![License](https://img.shields.io/github/license/Aaron-Lzb/vps-hysteria2-shadowrocket)](LICENSE)
-[![Validation](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/actions/workflows/validate.yml/badge.svg)](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/actions/workflows/validate.yml)
+[![Release](https://img.shields.io/github/v/release/Aaron-Lzb/vps-hysteria2)](https://github.com/Aaron-Lzb/vps-hysteria2/releases)
+[![License](https://img.shields.io/github/license/Aaron-Lzb/vps-hysteria2)](LICENSE)
+[![Validation](https://github.com/Aaron-Lzb/vps-hysteria2/actions/workflows/validate.yml/badge.svg)](https://github.com/Aaron-Lzb/vps-hysteria2/actions/workflows/validate.yml)
 
-一个使用 Hysteria2、TLS、systemd 和 Shadowrocket 分流规则搭建自托管加密网络基础设施的项目模板。
+一套简单、实用的 VPS Hysteria2 部署方案，包含 TLS、systemd、证书自动续期、状态检查，并可配合多种支持 Hysteria2 的客户端使用。
+
+在 VPS 上部署 Hysteria2 服务端，并通过任意支持 Hysteria2 的客户端连接使用。Shadowrocket 继续作为本项目维护的客户端示例，但不再代表整个项目的身份。
+
+AWS EC2 是最初并持续保留的 VPS 测试参考，不是必需基础设施。其他允许 Ubuntu 和入站 UDP 流量的 VPS 也可沿用相同服务端架构。
 
 ## 导航
 
-- [项目简介](#1-项目简介)
-- [项目特点](#2-项目特点)
-- [系统架构](#3-系统架构)
-- [各模块作用](#4-各模块作用)
-- [部署前准备](#5-部署前准备)
-- [快速开始](#6-快速开始)
-- [部署流程概览](#7-部署流程概览)
-- [Hysteria2 配置说明](#8-hysteria2-配置说明)
-- [Shadowrocket 分流逻辑](#9-shadowrocket-分流逻辑)
-- [DNS 设计说明](#10-dns-设计说明)
-- [自动证书续期](#11-自动证书续期)
-- [服务自动启动与恢复](#12-服务自动启动与恢复)
-- [常见问题排查](#13-常见问题排查)
-- [安全注意事项](#14-安全注意事项)
-- [项目目录结构](#15-项目目录结构)
-- [文档导航](#16-文档导航)
-- [当前版本](#17-当前版本)
-- [License](#18-license)
+- [项目状态](#项目状态)
+- [项目特点](#项目特点)
+- [系统架构](#系统架构)
+- [部署前准备](#部署前准备)
+- [快速开始](#快速开始)
+- [客户端配置](#客户端配置)
+- [服务端配置](#服务端配置)
+- [证书自动续期](#证书自动续期)
+- [状态检查](#状态检查)
+- [项目结构](#项目结构)
+- [文档导航](#文档导航)
+- [安全注意事项](#安全注意事项)
 
-## 1. 项目简介
+## 项目状态
 
-本项目提供一套尽量简单、可复现的个人 Hysteria2 部署框架。服务器运行在用户自己管理的 Linux VPS 上，客户端使用 Shadowrocket 建立连接并决定哪些流量直接访问、哪些流量经过 VPS。
+当前版本：**v1.3.0**
 
-AWS EC2 是本项目最初并持续参考的测试环境，但不是必需基础设施。只要 Linux VPS 支持 Ubuntu、拥有公网地址，并允许入站 UDP 443，就可以按照相同思路部署。Oracle Cloud、Google Cloud、Azure、DigitalOcean、Vultr 以及其他 Linux VPS 提供商都可能适用，但控制台名称、静态 IP 产品和防火墙配置方式会有所不同。
+**v1.3.0 - 客户端中立化项目定位** 将项目身份从 `vps-hysteria2-shadowrocket` 调整为 `vps-hysteria2`，明确以 Hysteria2 服务端部署为核心，并扩展多客户端说明。
 
-本项目不是托管服务，也不会替你保管域名、密码或证书。部署者需要自行管理服务器、云平台账户、网络规则和客户端配置。
+本次调整不改变服务端脚本、Hysteria2 配置行为、systemd、TLS 续期、CI 或现有 Shadowrocket 示例。v1.2.0 及以前的发布历史保持不变。
 
-## 2. 项目特点
+## 项目特点
 
-- 使用自己的 Ubuntu VPS 运行 Hysteria2
-- Hysteria2 通过 QUIC 和 UDP 443 传输，并使用 TLS
+- 在自己的 Ubuntu VPS 上运行 Hysteria2 代理服务
+- 使用 QUIC、UDP 443 和 TLS
 - 使用 systemd 管理开机启动和异常恢复
-- 使用 Certbot 管理 Let's Encrypt 证书及续期
-- 提供 Shadowrocket 分流示例：局域网和中国大陆流量直连，其余流量走代理
-- 提供不会包含个人域名、服务器地址和真实密码的公开模板
-- 保留 AWS EC2 实测参考，同时将应用配置与云平台解耦
-- 提供服务、端口、证书和 DNS 状态检查脚本
+- 使用 Certbot 管理证书及续期钩子
+- 提供服务、端口、证书和 DNS 状态检查
+- 服务端配置不绑定 VPS 提供商或客户端品牌
+- 保留经过项目维护的 Shadowrocket 分流示例
+- 提供中英文部署和排错文档
+- 公开模板只使用占位符，不包含部署者的敏感信息
 
-## 3. 系统架构
+## 系统架构
 
 ```text
-iPhone / iPad / Mac
-         |
-         v
-    Shadowrocket
-    连接与规则判断
-         |
-         v
- Hysteria2 加密传输
-   QUIC + UDP 443
-         |
-         v
-     YOUR_DOMAIN
-         |
-         v
-    Ubuntu Linux VPS
-         |
-         v
+支持 Hysteria2 的客户端
+          |
+          v
+ Hysteria2 加密代理连接
+    QUIC + UDP 443
+          |
+          v
+      YOUR_DOMAIN
+          |
+          v
+     Ubuntu VPS
+          |
+          v
        Internet
 ```
 
-可以把整个系统理解成三层：VPS 提供服务器和公网出口；Hysteria2 负责客户端与服务器之间的加密传输；Shadowrocket 负责发起连接并执行分流规则。
+VPS 提供 Ubuntu、公网地址和防火墙；Hysteria2 负责认证及加密代理传输；客户端负责填写连接参数，并在支持时管理 DNS 和分流规则。
 
-完整设计见[中文系统架构文档](docs/zh-CN/architecture.md)。
+客户端可以更换，但服务端的域名、UDP 端口、密码和 TLS 证书必须与客户端配置匹配。详见[中文系统架构](docs/zh-CN/architecture.md)。
 
-## 4. 各模块作用
+## 部署前准备
 
-| 模块 | 通俗说明 | 主要作用 |
-| --- | --- | --- |
-| VPS | 一台放在数据中心、可远程管理的 Linux 服务器 | 运行 Hysteria2，并作为被代理流量的网络出口 |
-| Elastic IP / 静态公网 IP | 不容易随服务器重启而变化的公网地址 | 让域名持续指向同一台服务器；不同云平台名称可能不同 |
-| 自定义域名 | 稳定且易记的服务器入口 | 供 Shadowrocket 连接，也是申请 TLS 证书时使用的名称 |
-| TLS 证书 | 用于确认服务器身份的数字证书 | 为 Hysteria2 连接提供服务器认证和加密基础 |
-| Certbot | Let's Encrypt 证书管理工具 | 申请、查看、测试续期和自动更新证书 |
-| Hysteria2 | 客户端与 VPS 之间的加密传输通道 | 认证客户端，并通过 QUIC/UDP 传输被代理流量 |
-| Shadowrocket | 客户端连接工具和流量分流控制中心 | 保存节点信息、控制 DNS，并根据规则选择 DIRECT 或 PROXY |
-| systemd | Ubuntu 的系统服务管理器 | 开机启动 Hysteria2，并在进程异常退出后自动重启 |
+需要准备：
 
-## 5. 部署前准备
+- Ubuntu 22.04 或 24.04 VPS
+- 可用于域名解析的公网地址
+- 可以修改 DNS 记录的域名
+- 云平台防火墙允许 UDP 443
+- 使用 HTTP-01 申请证书时可用的 TCP 80
+- 一个明确支持 Hysteria2 的客户端版本
+- 基本 Linux 命令行操作能力
 
-开始前需要准备：
+AWS、Oracle Cloud、Google Cloud、Azure、DigitalOcean、Vultr 和其他 Linux VPS 都可能适用。各平台的防火墙和静态公网 IP 产品名称不同。
 
-- 一台 Ubuntu 22.04 或 24.04 VPS
-- VPS 公网地址；推荐使用提供商的静态或保留地址功能
-- 一个自己管理的域名，并可修改 DNS 记录
-- 云平台防火墙中开放 UDP 443 的权限
-- 通过 SSH 管理服务器的方式
-- 客户端已安装 Shadowrocket
-- 能够执行复制、编辑文件和运行命令等基本操作
+## 快速开始
 
-还应提前确认：
+### 1. 准备 VPS 和域名
 
-- `YOUR_DOMAIN` 已通过 A 记录指向 `YOUR_SERVER_IP`
-- SSH 来源范围尽量限制为可信地址
-- 使用 HTTP-01 申请证书时可以临时使用 TCP 80
-- 云平台账户已经启用 MFA
-
-## 6. 快速开始
-
-### 1. 准备 VPS 和网络
-
-创建 Ubuntu VPS，配置稳定公网 IP，并在云平台防火墙中允许 UDP 443。AWS 用户可以参考[中文 VPS 部署指南](docs/zh-CN/vps-deployment.md)。
-
-### 2. 配置域名
-
-在 DNS 服务商处添加记录：
-
-```text
-类型：A
-主机：YOUR_DOMAIN 对应的主机部分
-值：  YOUR_SERVER_IP
-```
-
-检查解析：
+创建 Ubuntu VPS，配置稳定公网地址，在云防火墙中允许 UDP 443，并让 `YOUR_DOMAIN` 指向 `YOUR_SERVER_IP`。
 
 ```bash
 dig YOUR_DOMAIN
 ```
 
-### 3. 安装 Hysteria2
+AWS 用户可参考[中文 VPS 部署指南](docs/zh-CN/vps-deployment.md)。
+
+### 2. 安装 Hysteria2
 
 在可信的仓库副本中执行：
 
@@ -137,9 +104,9 @@ dig YOUR_DOMAIN
 sudo bash scripts/install-hysteria.sh
 ```
 
-脚本会检查 root 权限和 Ubuntu 环境，并保留已有的 Hysteria2 配置及 systemd 服务文件。它不会自动替你填写域名和密码。
+安装脚本会检查 root 权限和 Ubuntu 环境，并保留已有配置及 systemd 服务文件。
 
-### 4. 准备服务器配置
+### 3. 准备服务端配置
 
 参考：
 
@@ -147,82 +114,82 @@ sudo bash scripts/install-hysteria.sh
 configs/hysteria/config.example.yaml
 ```
 
-仅在服务器的私有配置副本中替换：
+只在服务器的私有副本中替换：
 
 ```text
 YOUR_DOMAIN
 YOUR_PASSWORD
 ```
 
-配置文件路径保持为：
+目标配置路径保持为：
 
 ```text
 /etc/hysteria/config.yaml
 ```
 
-### 5. 启动服务
-
-确认证书路径、密码和 YAML 格式无误后执行：
+### 4. 启动服务
 
 ```bash
 sudo systemctl enable --now hysteria-server
 sudo systemctl status hysteria-server
 ```
 
-### 6. 配置 Shadowrocket
+### 5. 配置客户端
 
-添加 Hysteria2 节点，填写与服务器一致的域名、端口和密码，然后导入或参考：
+在支持 Hysteria2 的客户端中填写：
 
-```text
-configs/shadowrocket/Hysteria2-Split-Routing.conf
-```
+| 字段 | 内容 |
+| --- | --- |
+| 服务器 | `YOUR_DOMAIN` |
+| 端口 | `443` |
+| 密码 | 与服务端 `YOUR_PASSWORD` 完全一致 |
+| TLS/SNI 名称 | `YOUR_DOMAIN` |
 
-### 7. 检查部署状态
+不同客户端界面和语法不同，应以当前安装版本的官方文档为准。
+
+### 6. 检查状态
 
 ```bash
 sudo bash scripts/check-status.sh YOUR_DOMAIN
 ```
 
-脚本会检查 Hysteria2 服务、UDP 443 监听、Certbot 证书信息和域名解析，并用 PASS/FAIL 显示结果。
+脚本会检查 Hysteria2 服务、UDP 443 监听、Certbot 证书信息和 DNS 解析。
 
-## 7. 部署流程概览
+## 客户端配置
+
+本项目的 Hysteria2 服务端与客户端品牌解耦。只要客户端当前版本实现了 Hysteria2，并能配置域名、UDP 端口、密码认证和 TLS/SNI，就可以按照对应客户端文档尝试连接。
+
+| 客户端或客户端系列 | 本项目说明 |
+| --- | --- |
+| Shadowrocket | 提供详细客户端文档和现有分流配置 |
+| Mihomo / Clash.Meta 兼容客户端 | Mihomo 提供 Hysteria2 代理类型；按客户端及内核版本文档配置 |
+| FlClash | 基于 ClashMeta；需要确认所带内核版本并使用兼容的 Mihomo 配置 |
+| Surge | 本项目暂不提供配置，也不默认承诺兼容；请先确认当前版本的 Hysteria2 支持情况 |
+| 其他 Hysteria2 客户端 | 按客户端官方文档填写与服务端一致的连接参数 |
+
+这里列出产品名称不代表所有历史版本都支持 Hysteria2。除 Shadowrocket 外，本项目暂不维护可直接导入的客户端配置；详细指南会在配置得到验证后再添加。
+
+### Shadowrocket
+
+现有 Shadowrocket 配置是有意保留的客户端专用示例：
 
 ```text
-创建 Ubuntu VPS
-       |
-       v
-配置云防火墙与静态公网 IP
-       |
-       v
-让 YOUR_DOMAIN 指向 YOUR_SERVER_IP
-       |
-       v
-安装 Hysteria2 和 Certbot
-       |
-       v
-申请 TLS 证书
-       |
-       v
-配置 /etc/hysteria/config.yaml
-       |
-       v
-启动 hysteria-server.service
-       |
-       v
-安装 Certbot 续期钩子
-       |
-       v
-配置 Shadowrocket 节点和分流规则
-       |
-       v
-运行状态检查并测试连接
+configs/shadowrocket/Hysteria2-Split-Routing.conf
 ```
 
-遇到问题时，不要一次修改很多参数。建议按照“域名解析 → 云防火墙 → UDP 443 → systemd 服务 → TLS → 密码 → 客户端规则”的顺序逐层确认。
+它把局域网和中国大陆流量设为 DIRECT，把其他流量交给选定的 Hysteria2 代理节点。节点字段、完整流量图、DNS 设计和排错方法见 [Shadowrocket 客户端配置](docs/zh-CN/clients/shadowrocket.md)。
 
-## 8. Hysteria2 配置说明
+### Mihomo / Clash.Meta 兼容客户端
 
-服务器示例配置的核心内容是：
+Mihomo 官方文档提供原生 `hysteria2` 代理类型。配置字段可能随内核和客户端版本变化，因此本项目链接[官方 Mihomo Hysteria2 配置参考](https://wiki.metacubex.one/en/config/proxies/hysteria2/)，不复制未经本项目验证的配置。
+
+### 其他客户端
+
+使用 FlClash、Surge 或其他客户端时，应先确认当前版本明确支持 Hysteria2。不要把其他协议的配置格式直接套用到 Hysteria2，也不要假设不同客户端可以导入 Shadowrocket 配置文件。
+
+## 服务端配置
+
+服务器示例核心内容：
 
 ```yaml
 listen: :443
@@ -236,90 +203,33 @@ auth:
   password: YOUR_PASSWORD
 ```
 
-- `listen: :443`：Hysteria2 在 UDP 443 上监听。
-- `tls.cert`：完整证书链文件路径。
-- `tls.key`：TLS 私钥文件路径。该文件绝不能上传到仓库。
-- `auth.type: password`：使用密码认证。
-- `YOUR_PASSWORD`：必须与 Shadowrocket 节点中填写的密码完全一致。
+- `listen: :443`：Hysteria2 监听 UDP 443。
+- `tls.cert`：完整证书链。
+- `tls.key`：TLS 私钥，绝不能上传。
+- `YOUR_PASSWORD`：必须与客户端密码完全一致。
 
-示例还保留现有的 masquerade 配置。v1.2.0 只增加文档，不改变服务器模板内容或行为。
-
-## 9. Shadowrocket 分流逻辑
-
-当前规则的基本原则：
+固定服务端路径：
 
 ```text
-局域网流量              -> DIRECT
-中国大陆域名和 IP       -> DIRECT
-其他流量                -> PROXY
+/usr/local/bin/hysteria
+/etc/hysteria/config.yaml
+/etc/systemd/system/hysteria-server.service
 ```
 
-访问中国大陆网站时：
+更换客户端不需要改变这些路径。
 
-```text
-用户
-  |
-  v
-Shadowrocket
-  |
-  v
-规则判断
-  |
-  v
-DIRECT
-  |
-  v
-本地网络直接访问
+## 证书自动续期
+
+安装 Certbot deploy hook：
+
+```bash
+sudo install -m 0755 scripts/restart-hysteria-after-renew.sh \
+  /etc/letsencrypt/renewal-hooks/deploy/restart-hysteria-after-renew.sh
+sudo certbot renew --dry-run
 ```
 
-访问其他网站时：
-
 ```text
-用户
-  |
-  v
-Shadowrocket
-  |
-  v
-Hysteria2
-  |
-  v
-VPS
-  |
-  v
-Internet
-```
-
-也就是说，命中中国大陆和局域网规则的流量不会经过 VPS；其余流量交给 Shadowrocket 中选定的 Hysteria2 节点。规则效果仍取决于规则数据、客户端版本和实际网络环境。
-
-## 10. DNS 设计说明
-
-Shadowrocket 示例配置保持以下 DNS 设置：
-
-主要 DNS（DoH）：
-
-```text
-https://dns.alidns.com/dns-query
-https://doh.pub/dns-query
-```
-
-备用 DNS：
-
-```text
-223.5.5.5
-119.29.29.29
-```
-
-DoH 会加密客户端到 DNS 服务之间的查询传输，减少明文 DNS 在传输路径上直接暴露的情况。示例优先使用国内 DoH，并使用国内公共 DNS 作为备用，目的是让中国大陆域名解析更稳定、与直连分流更匹配。
-
-这个设计是一个偏实用的默认方案，不代表在所有运营商、地区和网络环境下都能提供完全一致的结果，也不宣称能够完美或普遍地解决 DNS 污染问题。遇到解析异常时，应结合 Shadowrocket 日志、当前网络和域名实际解析结果排查。
-
-## 11. 自动证书续期
-
-Let's Encrypt 证书需要定期续期。Certbot 完成续期后，部署钩子重启 Hysteria2，使进程重新读取证书文件：
-
-```text
-Certbot 完成续期
+Certbot 续期成功
        |
        v
 执行 deploy hook
@@ -331,100 +241,32 @@ Certbot 完成续期
 加载新证书
 ```
 
-安装钩子：
+服务重启时，已有连接可能短暂中断。
+
+## 状态检查
 
 ```bash
-sudo install -m 0755 scripts/restart-hysteria-after-renew.sh \
-  /etc/letsencrypt/renewal-hooks/deploy/restart-hysteria-after-renew.sh
+sudo bash scripts/check-status.sh YOUR_DOMAIN
 ```
 
-测试续期流程：
-
-```bash
-sudo certbot renew --dry-run
-```
-
-续期钩子会短暂重启服务，已有连接可能在重启时中断。
-
-## 12. 服务自动启动与恢复
-
-systemd 服务文件位于：
+遇到问题时按以下顺序检查：
 
 ```text
-/etc/systemd/system/hysteria-server.service
+DNS 解析
+  -> 云防火墙和主机防火墙
+  -> UDP 443
+  -> systemd 服务
+  -> TLS 证书
+  -> 密码认证
+  -> 客户端配置
 ```
 
-项目示例使用：
+详细命令见[中文故障排查指南](docs/zh-CN/troubleshooting.md)。
 
-```ini
-Restart=always
-RestartSec=3
-```
-
-这表示进程退出后，systemd 会等待 3 秒再尝试启动。执行 `enable` 后，服务也会随系统启动：
-
-```bash
-sudo systemctl enable hysteria-server
-```
-
-常用命令：
-
-```bash
-sudo systemctl start hysteria-server
-sudo systemctl restart hysteria-server
-sudo systemctl status hysteria-server
-sudo journalctl -u hysteria-server -f
-```
-
-自动重启不能修复错误配置。如果证书路径、YAML 或密码配置有问题，应先查看日志并修正根因。
-
-## 13. 常见问题排查
-
-### 服务无法启动
-
-```bash
-sudo systemctl status hysteria-server
-sudo journalctl -u hysteria-server -f
-```
-
-重点检查 YAML 缩进、证书路径、文件权限和错误日志。
-
-### Shadowrocket 连接超时
-
-```bash
-sudo tcpdump -i any -n udp port 443
-```
-
-如果完全看不到客户端数据包，优先检查云平台防火墙、服务器防火墙、UDP 443 和客户端当前网络。如果能看到双向数据包，再检查认证密码、TLS 和 Hysteria2 日志。
-
-### 密码认证失败
-
-Shadowrocket 密码必须与服务器中的 `YOUR_PASSWORD` 完全一致，包括大小写，不能多空格。
-
-### 证书问题
-
-```bash
-sudo certbot certificates
-sudo certbot renew --dry-run
-```
-
-更完整的检查步骤见[中文故障排查指南](docs/zh-CN/troubleshooting.md)。
-
-## 14. 安全注意事项
-
-- 不要上传 TLS 私钥、SSH 私钥或任何其他私钥。
-- 不要提交真实密码、个人域名、服务器公网地址、证书或云平台凭据。
-- 公开示例中只使用 `YOUR_DOMAIN`、`YOUR_SERVER_IP`、`YOUR_PASSWORD` 和 `YOUR_EMAIL`。
-- 尽量把 SSH 入站来源限制为可信地址或网络。
-- 为 VPS 提供商账户启用 MFA，并设置账单或用量提醒。
-- 启动服务前检查脚本、配置和防火墙规则。
-- 定期维护 Ubuntu、Hysteria2 和 Certbot。
-- 私有部署配置与公开仓库分开保存。
-
-## 15. 项目目录结构
+## 项目结构
 
 ```text
-vps-hysteria2-shadowrocket/
+vps-hysteria2/
 ├── .github/workflows/validate.yml
 ├── configs/
 │   ├── hysteria/config.example.yaml
@@ -434,53 +276,55 @@ vps-hysteria2-shadowrocket/
 │   ├── architecture.md
 │   ├── aws-deployment.md
 │   ├── troubleshooting.md
+│   ├── clients/shadowrocket.md
 │   └── zh-CN/
 │       ├── architecture.md
 │       ├── vps-deployment.md
-│       └── troubleshooting.md
+│       ├── troubleshooting.md
+│       └── clients/shadowrocket.md
 ├── scripts/
 │   ├── check-status.sh
 │   ├── install-hysteria.sh
 │   └── restart-hysteria-after-renew.sh
-├── .gitignore
-├── .yamllint.yml
 ├── LICENSE
 ├── README.md
 ├── README_CN.md
 └── VERSION
 ```
 
-## 16. 文档导航
+## 文档导航
 
-中文文档：
+中文：
 
 - [中文项目主页](README_CN.md)
 - [系统架构](docs/zh-CN/architecture.md)
 - [VPS 部署指南](docs/zh-CN/vps-deployment.md)
 - [故障排查指南](docs/zh-CN/troubleshooting.md)
+- [Shadowrocket 客户端配置](docs/zh-CN/clients/shadowrocket.md)
 
-英文文档：
+English:
 
 - [English README](README.md)
 - [System architecture](docs/architecture.md)
 - [AWS reference VPS deployment](docs/aws-deployment.md)
 - [Troubleshooting guide](docs/troubleshooting.md)
+- [Shadowrocket client configuration](docs/clients/shadowrocket.md)
 
 配置参考：
 
-- [Hysteria2 服务器配置示例](configs/hysteria/config.example.yaml)
-- [systemd 服务示例](configs/systemd/hysteria-server.service)
+- [Hysteria2 服务端配置](configs/hysteria/config.example.yaml)
+- [systemd 服务](configs/systemd/hysteria-server.service)
 - [Shadowrocket 分流示例](configs/shadowrocket/Hysteria2-Split-Routing.conf)
 
-## 17. 当前版本
+## 安全注意事项
 
-当前版本：**v1.2.0**
+- 不上传 TLS 私钥、SSH 私钥、证书、真实密码、云平台凭据、个人域名或服务器公网地址。
+- 公开示例只使用 `YOUR_DOMAIN`、`YOUR_SERVER_IP`、`YOUR_PASSWORD` 和 `YOUR_EMAIL`。
+- 限制 SSH 来源，并为 VPS 提供商账户启用 MFA。
+- 定期维护 Ubuntu、Hysteria2、Certbot 和所选客户端。
+- 私有部署配置与公开仓库分开保存。
 
-版本定位：**v1.2.0 - Bilingual Documentation Release**
-
-本次版本增加完整简体中文项目主页、系统架构、VPS 部署和故障排查文档，并改进中英文导航。它不增加新的网络功能，也不改变脚本、配置模板、systemd、Shadowrocket 分流或 GitHub Actions 的行为。
-
-## 18. License
+## License
 
 本项目使用 MIT License，详见 [LICENSE](LICENSE)。
 

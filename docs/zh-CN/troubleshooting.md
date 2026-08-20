@@ -25,7 +25,7 @@ Hysteria2 服务
 TLS 与认证配置
   |
   v
-Shadowrocket 分流规则
+客户端配置或分流规则
 ```
 
 不要一次修改多个参数，否则很难判断哪一项才是真正原因。先收集状态和日志，再针对证据进行修改。
@@ -38,8 +38,8 @@ Shadowrocket 分流规则
 - [ ] Hysteria2 服务处于 active (running)
 - [ ] 服务器正在监听 UDP 443
 - [ ] TLS 证书有效并包含 `YOUR_DOMAIN`
-- [ ] Shadowrocket 密码与服务器的 `YOUR_PASSWORD` 完全一致
-- [ ] Shadowrocket 节点域名、端口和 TLS 名称正确
+- [ ] 客户端密码与服务器的 `YOUR_PASSWORD` 完全一致
+- [ ] 客户端节点域名、端口和 TLS/SNI 正确
 
 先运行只读状态检查：
 
@@ -155,7 +155,7 @@ sudo systemctl status hysteria-server
 
 不要为了临时解决权限问题而把 TLS 私钥设置为所有用户可读。
 
-## 3. Shadowrocket 连接超时
+## 3. 客户端连接超时
 
 连接超时可能发生在域名解析、客户端网络、云防火墙、主机防火墙、UDP 443、服务监听或 TLS 等多个位置。
 
@@ -184,11 +184,11 @@ sudo ss -ulnp | grep 443
 sudo tcpdump -i any -n udp port 443
 ```
 
-然后在 Shadowrocket 中重新发起连接。
+然后在客户端中重新发起连接。
 
 如果完全看不到数据包，优先检查：
 
-- Shadowrocket 中的域名和端口
+- 客户端中的域名和端口
 - 客户端当前 Wi-Fi 或移动网络是否允许 UDP
 - 域名是否解析到正确 VPS
 - AWS Security Group 或其他云防火墙是否允许 UDP 443
@@ -203,7 +203,7 @@ Server -> Client
 
 这通常说明客户端与服务器之间的基本网络路径和 UDP 443 已经可以双向传输。接下来重点检查：
 
-- Shadowrocket 与服务端的认证密码
+- 客户端与服务端的认证密码
 - TLS 证书是否有效、域名是否匹配
 - Hysteria2 服务日志中的握手或认证错误
 
@@ -231,14 +231,14 @@ auth:
   password: YOUR_PASSWORD
 ```
 
-Shadowrocket 中的密码必须与 `YOUR_PASSWORD` 替换后的真实值完全一致。
+客户端中的密码必须与 `YOUR_PASSWORD` 替换后的真实值完全一致。
 
 检查以下细节：
 
 - 大小写必须一致
 - 开头和结尾不能多空格
 - 修改服务器密码后，客户端也要同步更新
-- Shadowrocket 不应继续使用旧节点或缓存的旧密码
+- 客户端不应继续使用旧节点或缓存的旧密码
 - 不要把真实密码粘贴到公开问题、日志或仓库
 
 修改服务端配置后重启服务：
@@ -271,7 +271,7 @@ tls:
   key: /etc/letsencrypt/live/YOUR_DOMAIN/privkey.pem
 ```
 
-Shadowrocket 连接的服务器名称和 TLS/SNI 名称应与证书域名一致。
+客户端连接的服务器名称和 TLS/SNI 名称应与证书域名一致。
 
 ## 6. 证书续期
 
@@ -338,9 +338,9 @@ AWS 参考环境中的关键规则是 UDP 443。其他平台也必须创建等�
 
 不要因为连接超时就把所有管理端口永久开放给整个 Internet。SSH 应尽量限制为可信来源。
 
-## 8. Shadowrocket 分流异常
+## 8. 客户端分流异常
 
-如果节点能够连接，但某些网站没有按照预期走 DIRECT 或 PROXY：
+如果客户端支持规则分流，并且节点能够连接，但某些网站没有按照预期走 DIRECT 或 PROXY：
 
 - 确认已经启用正确的配置模式
 - 确认当前选中的代理节点是目标 Hysteria2 节点
@@ -349,14 +349,14 @@ AWS 参考环境中的关键规则是 UDP 443。其他平台也必须创建等�
 - 检查域名解析结果是否影响 GEOIP 或规则判断
 - 临时记录具体目标域名，判断它命中了哪一条规则
 
-当前设计保持：
+Shadowrocket 示例保持：
 
 ```text
 局域网和中国大陆流量 -> DIRECT
 其他流量             -> PROXY
 ```
 
-v1.2.0 只增加中文说明，不改变现有 Shadowrocket 规则。
+这套分流是 Shadowrocket 客户端专用示例，不是 Hysteria2 服务端行为，也不能默认直接用于其他客户端。详见 [Shadowrocket 客户端配置](clients/shadowrocket.md)。
 
 ## 9. 常用诊断命令
 

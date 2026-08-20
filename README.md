@@ -1,14 +1,16 @@
-# VPS Hysteria2 Shadowrocket
+# VPS Hysteria2
 
 English | [简体中文](README_CN.md)
 
-[![Release](https://img.shields.io/github/v/release/Aaron-Lzb/vps-hysteria2-shadowrocket)](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/releases)
-[![License](https://img.shields.io/github/license/Aaron-Lzb/vps-hysteria2-shadowrocket)](LICENSE)
-[![Validation](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/actions/workflows/validate.yml/badge.svg)](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/actions/workflows/validate.yml)
+[![Release](https://img.shields.io/github/v/release/Aaron-Lzb/vps-hysteria2)](https://github.com/Aaron-Lzb/vps-hysteria2/releases)
+[![License](https://img.shields.io/github/license/Aaron-Lzb/vps-hysteria2)](LICENSE)
+[![Validation](https://github.com/Aaron-Lzb/vps-hysteria2/actions/workflows/validate.yml/badge.svg)](https://github.com/Aaron-Lzb/vps-hysteria2/actions/workflows/validate.yml)
 
-A simple, reproducible framework for self-hosted encrypted networking infrastructure using Hysteria2, TLS, systemd, and Shadowrocket split routing.
+A simple and practical Hysteria2 deployment solution for VPS servers, with TLS, systemd, automatic certificate renewal, status checking, and support for multiple Hysteria2 clients.
 
-AWS EC2 is the original tested environment and is retained as a reference VPS deployment example. It is not required infrastructure; the same architecture can be used with other Linux VPS providers that support Ubuntu and inbound UDP traffic.
+Deploy Hysteria2 on a VPS and connect using any compatible Hysteria2 client. Shadowrocket remains a documented client example, but the server deployment is not tied to one client application.
+
+AWS EC2 is the original tested VPS reference. It is not required infrastructure; the same server architecture can be used with other Ubuntu VPS providers that allow inbound UDP traffic.
 
 ## Contents
 
@@ -18,7 +20,8 @@ AWS EC2 is the original tested environment and is retained as a reference VPS de
 - [Supported VPS providers](#supported-vps-providers)
 - [Requirements](#requirements)
 - [Quick start](#quick-start)
-- [Configuration](#configuration)
+- [Client configuration](#client-configuration)
+- [Server configuration](#server-configuration)
 - [Certificate renewal](#certificate-renewal)
 - [Health checks](#health-checks)
 - [Documentation](#documentation)
@@ -26,41 +29,51 @@ AWS EC2 is the original tested environment and is retained as a reference VPS de
 
 ## Status
 
-Current version: **v1.2.0**
+Current version: **v1.3.0**
 
-**v1.2.0 - Bilingual Documentation Release** adds a complete Simplified Chinese README, architecture guide, VPS deployment guide, troubleshooting guide, and bilingual navigation. This release does not change networking, installation, service, routing, workflow, or configuration behavior.
+**v1.3.0 - Client-Neutral Project Repositioning** renames the project identity from `vps-hysteria2-shadowrocket` to `vps-hysteria2` and presents Hysteria2 as the core server deployment. It expands client guidance without changing server scripts, configuration behavior, systemd, TLS renewal, validation, or the existing Shadowrocket example.
+
+The existing v1.2.0 release and its history remain unchanged.
 
 ## Features
 
-- Self-hosted Hysteria2 server on an Ubuntu VPS
-- QUIC transport over UDP 443 with TLS encryption
+- Self-hosted Hysteria2 proxy server on an Ubuntu VPS
+- QUIC transport over UDP 443 with TLS
 - systemd startup and failure recovery
 - Certbot certificate renewal with a deploy hook
-- Shadowrocket split routing for direct and proxied traffic
-- Provider-neutral application configuration
-- Example files that use placeholders instead of secrets
+- Read-only service, port, certificate, and DNS status checks
+- Provider-neutral server configuration
+- Client-neutral connection model
+- Maintained Shadowrocket split-routing example
+- English and Simplified Chinese documentation
+- Public examples that use placeholders instead of secrets
 
 ## Architecture
 
 ```text
-Phone / iPad / Mac
-        |
-   Shadowrocket
-        |
- Hysteria2 (QUIC + UDP 443)
-        |
-   Custom domain
-        |
-    Linux VPS
-        |
-     Internet
+Compatible Hysteria2 client
+          |
+          v
+ Hysteria2 encrypted proxy
+    QUIC + UDP 443
+          |
+          v
+      YOUR_DOMAIN
+          |
+          v
+     Ubuntu VPS
+          |
+          v
+       Internet
 ```
 
-The VPS supplies Ubuntu, a public IP address, firewall controls, and UDP 443 connectivity. Hysteria2 supplies the encrypted transport, while Shadowrocket controls client routing. See the [architecture guide](docs/architecture.md) for details.
+The VPS supplies Ubuntu, a public IP address, firewall controls, and UDP 443 connectivity. Hysteria2 provides authentication and encrypted proxy transport. The client supplies connection details and, where supported, routing and DNS policy.
+
+See the [architecture guide](docs/architecture.md) for component boundaries and traffic flow.
 
 ## Supported VPS providers
 
-The framework may be deployed on:
+The server framework may be deployed on:
 
 - AWS EC2
 - Oracle Cloud
@@ -70,7 +83,7 @@ The framework may be deployed on:
 - Vultr
 - Other Linux VPS providers
 
-Provider product names, firewall interfaces, and static-IP features differ. The [AWS deployment guide](docs/aws-deployment.md) remains the original tested reference example; translate its network requirements to your chosen provider.
+Provider product names, firewall interfaces, and static-IP features differ. The [AWS deployment guide](docs/aws-deployment.md) remains the original tested reference; translate its network requirements to the selected provider.
 
 ## Requirements
 
@@ -80,16 +93,16 @@ Before deployment, prepare:
 - Permission to allow inbound UDP 443 in the provider firewall
 - A registered domain with an A or AAAA record pointing to the VPS
 - A TLS certificate issued through Certbot
-- Shadowrocket on the client device
+- A client version that explicitly supports Hysteria2
 - Basic Linux command-line knowledge
 
-TCP 80 may also be needed temporarily for the HTTP-01 certificate challenge. Restrict SSH access to trusted source addresses whenever possible.
+TCP 80 may be needed temporarily for the HTTP-01 certificate challenge. Restrict SSH access to trusted source addresses whenever possible.
 
 ## Quick start
 
 ### 1. Prepare the VPS
 
-Create an Ubuntu VPS, assign a stable public IP if the provider offers one, allow inbound UDP 443, and point `YOUR_DOMAIN` to the server. AWS users can follow the [reference AWS deployment guide](docs/aws-deployment.md).
+Create an Ubuntu VPS, assign a stable public IP when available, allow inbound UDP 443, and point `YOUR_DOMAIN` to the server. AWS users can follow the [reference AWS deployment guide](docs/aws-deployment.md).
 
 ### 2. Install Hysteria2
 
@@ -103,16 +116,13 @@ The installer preserves existing Hysteria2 configuration and systemd unit files.
 
 ### 3. Configure the server
 
-Copy and edit the examples:
+Copy and edit the server example:
 
 ```text
-configs/
-├── hysteria/config.example.yaml
-├── shadowrocket/Hysteria2-Split-Routing.conf
-└── systemd/hysteria-server.service
+configs/hysteria/config.example.yaml
 ```
 
-Replace every applicable placeholder:
+Replace the applicable placeholders only in the private deployment copy:
 
 ```text
 YOUR_DOMAIN
@@ -132,13 +142,45 @@ sudo systemctl enable --now hysteria-server
 sudo systemctl status hysteria-server
 ```
 
-### 5. Configure Shadowrocket
+### 5. Configure a client
 
-Add a Hysteria2 node whose domain, port, and password match the server. Import the example split-routing configuration so local and mainland China traffic is direct and remaining traffic uses the selected proxy.
+In a compatible Hysteria2 client, configure the server domain, UDP port `443`, password, and TLS/SNI name. The password and domain must match the server.
 
-## Configuration
+Client interfaces and configuration syntax vary. Follow the documentation for the installed client version. This repository currently includes a detailed [Shadowrocket guide](docs/clients/shadowrocket.md) and split-routing example.
 
-The server example listens on UDP 443, reads Let's Encrypt certificates from `/etc/letsencrypt/live/YOUR_DOMAIN/`, and authenticates with `YOUR_PASSWORD`. The provided systemd unit continues to use the v1.0.0 paths:
+## Client configuration
+
+The Hysteria2 server is client-neutral. A client is suitable when its current version implements Hysteria2 and supports the connection fields used by this deployment: server domain, UDP port, password authentication, and TLS/SNI verification.
+
+| Client or client family | Project guidance |
+| --- | --- |
+| Shadowrocket | Documented client example with an included split-routing configuration |
+| Mihomo / Clash.Meta-compatible clients | Mihomo provides a Hysteria2 proxy type; use the documentation for the client and bundled core version |
+| FlClash | ClashMeta-based client; verify the bundled core/version and use compatible Mihomo configuration guidance |
+| Surge | No configuration is supplied here; verify Hysteria2 support in the installed version before use |
+| Other Hysteria2 clients | Use the client vendor's current documentation and match the server connection fields |
+
+The repository does not claim that every version of every named client supports Hysteria2. Detailed guides for clients other than Shadowrocket may be added after their configuration is verified.
+
+### Shadowrocket
+
+The existing Shadowrocket example remains supported and intentionally client-specific:
+
+```text
+configs/shadowrocket/Hysteria2-Split-Routing.conf
+```
+
+It sends LAN and mainland China traffic directly and sends remaining traffic through the selected Hysteria2 proxy. See [Shadowrocket client configuration](docs/clients/shadowrocket.md) for node fields, routing flow, DNS design, and troubleshooting.
+
+### Mihomo / Clash.Meta-compatible clients
+
+Mihomo documents a native `hysteria2` proxy type. Configuration details can change with the core and client version, so this project links to the [official Mihomo Hysteria2 reference](https://wiki.metacubex.one/en/config/proxies/hysteria2/) instead of maintaining an unverified copy.
+
+## Server configuration
+
+The server example listens on UDP 443, reads Let's Encrypt certificates from `/etc/letsencrypt/live/YOUR_DOMAIN/`, and authenticates with `YOUR_PASSWORD`.
+
+The established server paths remain unchanged:
 
 ```text
 /usr/local/bin/hysteria
@@ -146,7 +188,7 @@ The server example listens on UDP 443, reads Let's Encrypt certificates from `/e
 /etc/systemd/system/hysteria-server.service
 ```
 
-Keeping these paths unchanged preserves compatibility with existing deployments.
+Changing client software does not require changing these server paths.
 
 ## Certificate renewal
 
@@ -157,8 +199,6 @@ sudo install -m 0755 scripts/restart-hysteria-after-renew.sh \
   /etc/letsencrypt/renewal-hooks/deploy/restart-hysteria-after-renew.sh
 sudo certbot renew --dry-run
 ```
-
-The deploy hook runs only after a successful renewal:
 
 ```text
 Certbot renewal
@@ -175,13 +215,13 @@ load new certificate
 
 ## Health checks
 
-Run the status helper on the server after replacing or passing the domain placeholder:
+Run the status helper on the server:
 
 ```bash
 sudo bash scripts/check-status.sh YOUR_DOMAIN
 ```
 
-It reports PASS or FAIL for the systemd service, UDP 443 listener, Certbot certificate information, and DNS resolution. Missing diagnostic commands are reported clearly instead of causing an abrupt exit.
+It reports PASS or FAIL for the systemd service, UDP 443 listener, Certbot certificate information, and DNS resolution. Missing diagnostic commands are reported clearly.
 
 ## Documentation
 
@@ -190,6 +230,7 @@ English documentation:
 - [System architecture](docs/architecture.md)
 - [AWS reference VPS deployment](docs/aws-deployment.md)
 - [Troubleshooting, deployment, and security checklists](docs/troubleshooting.md)
+- [Shadowrocket client configuration](docs/clients/shadowrocket.md)
 
 Simplified Chinese documentation:
 
@@ -197,6 +238,7 @@ Simplified Chinese documentation:
 - [系统架构](docs/zh-CN/architecture.md)
 - [VPS 部署指南](docs/zh-CN/vps-deployment.md)
 - [故障排查指南](docs/zh-CN/troubleshooting.md)
+- [Shadowrocket 客户端配置](docs/zh-CN/clients/shadowrocket.md)
 
 Configuration references:
 
@@ -210,9 +252,9 @@ Configuration references:
 - Keep `YOUR_DOMAIN`, `YOUR_PASSWORD`, `YOUR_EMAIL`, and `YOUR_SERVER_IP` in public examples.
 - Restrict SSH access and enable MFA on the VPS-provider account.
 - Review provider firewall rules and installed scripts before use.
-- Keep Ubuntu, Hysteria2, and Certbot updated through normal maintenance.
+- Keep Ubuntu, Hysteria2, Certbot, and the selected client updated.
 
-For diagnosis, use [the troubleshooting guide](docs/troubleshooting.md) and check the service, network, UDP firewall, TLS certificate, authentication, and routing layers in order.
+For diagnosis, use the [troubleshooting guide](docs/troubleshooting.md) and check DNS, network firewalls, UDP 443, the service, TLS, authentication, and client configuration in order.
 
 ## License
 

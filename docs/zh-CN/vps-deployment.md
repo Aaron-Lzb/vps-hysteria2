@@ -13,7 +13,7 @@
 - 域名指向服务器公网地址
 - 云防火墙允许 UDP 443
 - Hysteria2 能读取有效 TLS 证书
-- Shadowrocket 中的域名、端口和密码与服务端一致
+- 客户端中的域名、端口、密码和 TLS/SNI 与服务端一致
 
 ## 1. 创建 VPS
 
@@ -53,7 +53,7 @@ Security Group 是 AWS 在实例网络入口处提供的防火墙。其他云平
 | TCP | 443 | HTTPS 兼容或其他服务 | Hysteria2 的 UDP 监听本身不依赖此端口，按实际需要开放 |
 | UDP | 443 | Hysteria2 客户端流量 | **核心端口，必须正确配置** |
 
-Hysteria2 在本项目中使用的是 **UDP 443**，不是 TCP 443。只开放 TCP 443 而遗漏 UDP 443，会导致 Shadowrocket 无法建立 Hysteria2 连接。
+Hysteria2 在本项目中使用的是 **UDP 443**，不是 TCP 443。只开放 TCP 443 而遗漏 UDP 443，会导致兼容客户端无法建立 Hysteria2 连接。
 
 如果客户端经常在移动网络和不同 Wi-Fi 之间切换，UDP 443 的来源范围可能需要覆盖这些网络。此时应确保密码足够强，并持续维护服务器。SSH 的 TCP 22 不应因此对所有来源开放。
 
@@ -269,18 +269,22 @@ sudo certbot renew --dry-run
 
 正式续期成功后，deploy hook 会重启 Hysteria2，让进程读取新证书。重启期间连接可能短暂中断。
 
-## 12. 配置 Shadowrocket
+## 12. 配置客户端
 
-在 Shadowrocket 中新增 Hysteria2 节点，至少确认：
+在明确支持 Hysteria2 的客户端中新增节点，至少确认：
 
 | 客户端字段 | 应填写的内容 |
 | --- | --- |
 | 服务器 | `YOUR_DOMAIN` |
 | 端口 | `443` |
 | 密码 | 与服务器 `YOUR_PASSWORD` 完全一致 |
-| TLS/SNI 名称 | `YOUR_DOMAIN`，具体界面名称随客户端版本变化 |
+| TLS/SNI 名称 | `YOUR_DOMAIN`，具体界面名称随客户端和版本变化 |
 
-然后导入或参考：
+客户端界面和配置语法不同，应使用当前版本的官方文档。不要把一种客户端的配置直接导入另一种客户端。
+
+### Shadowrocket 示例
+
+Shadowrocket 用户可以参考项目维护的客户端指南和配置：
 
 ```text
 configs/shadowrocket/Hysteria2-Split-Routing.conf
@@ -293,7 +297,11 @@ configs/shadowrocket/Hysteria2-Split-Routing.conf
 其他流量             -> PROXY
 ```
 
-如果 Shadowrocket 版本中的字段名称与文档不同，应以当前客户端界面和 Hysteria2 节点类型为准，但服务器域名、UDP 443、TLS 名称和密码必须互相匹配。
+详见 [Shadowrocket 客户端配置](clients/shadowrocket.md)。如果字段名称与文档不同，应以当前客户端界面和 Hysteria2 节点类型为准，但服务器域名、UDP 443、TLS 名称和密码必须互相匹配。
+
+### 其他客户端
+
+Mihomo/Clash.Meta 兼容客户端可以在当前内核明确支持 Hysteria2 时使用对应的 `hysteria2` 代理类型。FlClash、Surge 或其他产品的能力取决于具体版本；本项目不提供未经验证的导入配置。
 
 ## 13. 完成部署检查
 
@@ -310,8 +318,8 @@ sudo bash scripts/check-status.sh YOUR_DOMAIN
 - [ ] `hysteria-server` 为 active (running)
 - [ ] `ss` 显示 UDP 443 正在监听
 - [ ] Certbot 显示证书有效且包含 `YOUR_DOMAIN`
-- [ ] Shadowrocket 密码与服务器完全一致
-- [ ] Shadowrocket 节点使用正确域名和端口
+- [ ] 客户端密码与服务器完全一致
+- [ ] 客户端节点使用正确域名、端口和 TLS/SNI
 - [ ] DIRECT 与 PROXY 流量分别符合预期
 
 如果某一项失败，请按[中文故障排查指南](troubleshooting.md)逐层检查，不要同时修改多个无关参数。

@@ -10,7 +10,7 @@ This document summarizes common issues and solutions for the Hysteria2 encrypted
 - [ ] UDP 443 is open in the VPS-provider firewall and host firewall
 - [ ] Hysteria2 is running
 - [ ] TLS certificate is valid
-- [ ] Shadowrocket password matches `YOUR_PASSWORD` on the server
+- [ ] Client password matches `YOUR_PASSWORD` on the server
 
 Run the server-side helper for the service, listening port, certificate, and DNS checks:
 
@@ -160,13 +160,13 @@ sudo systemctl restart hysteria-server
 
 
 
-# 3. Shadowrocket Connection Timeout
+# 3. Client Connection Timeout
 
 
 ## Symptoms
 
 
-Shadowrocket shows:
+A compatible client reports:
 
 ```
 Connection timeout
@@ -258,10 +258,12 @@ auth:
 Client:
 
 ```
-Shadowrocket Password
+Client password
 
 must be identical
 ```
+
+Client field names differ. Shadowrocket users can also review the dedicated [Shadowrocket client guide](clients/shadowrocket.md).
 
 
 

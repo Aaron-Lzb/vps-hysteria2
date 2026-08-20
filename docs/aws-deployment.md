@@ -151,7 +151,7 @@ After the AWS resources are ready:
 4. Replace `YOUR_DOMAIN` and `YOUR_PASSWORD` only in the private server copy.
 5. Review and start `hysteria-server.service`.
 6. Install the certificate-renewal deploy hook.
-7. Configure the matching Shadowrocket node and routing rules.
+7. Configure a compatible Hysteria2 client with matching domain, port, password, and TLS/SNI values.
 
 See the repository [README](../README.md), [architecture guide](architecture.md), and [troubleshooting guide](troubleshooting.md) for the remaining steps.
 
@@ -164,4 +164,6 @@ See the repository [README](../README.md), [architecture guide](architecture.md)
 | Security Group | Provider network firewall |
 | EBS volume | VPS disk storage |
 
-Only the provider layer changes. The Hysteria2 configuration, systemd unit, Certbot hook, and Shadowrocket routing model remain the same.
+Only the provider layer changes. The Hysteria2 configuration, systemd unit, and Certbot hook remain the same; client configuration is documented separately.
+
+For the maintained client example, see [Shadowrocket client configuration](clients/shadowrocket.md).
