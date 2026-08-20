@@ -1,5 +1,7 @@
 # AWS Reference VPS Deployment
 
+English | [简体中文](zh-CN/vps-deployment.md)
+
 This guide describes the original tested environment for the project. AWS EC2 is a **reference VPS deployment example**, not required infrastructure.
 
 The same Hysteria2 application architecture can run on any suitable Ubuntu VPS. Alternative providers may include:

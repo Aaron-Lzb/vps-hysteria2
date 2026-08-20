@@ -1,5 +1,7 @@
 # Troubleshooting Guide
 
+English | [简体中文](zh-CN/troubleshooting.md)
+
 This document summarizes common issues and solutions for the Hysteria2 encrypted networking deployment.
 
 ## Deployment checklist

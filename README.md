@@ -1,5 +1,7 @@
 # VPS Hysteria2 Shadowrocket
 
+English | [简体中文](README_CN.md)
+
 [![Release](https://img.shields.io/github/v/release/Aaron-Lzb/vps-hysteria2-shadowrocket)](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/releases)
 [![License](https://img.shields.io/github/license/Aaron-Lzb/vps-hysteria2-shadowrocket)](LICENSE)
 [![Validation](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/actions/workflows/validate.yml/badge.svg)](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/actions/workflows/validate.yml)
@@ -24,9 +26,9 @@ AWS EC2 is the original tested environment and is retained as a reference VPS de
 
 ## Status
 
-Current version: **v1.1.0**
+Current version: **v1.2.0**
 
-v1.1.0 generalizes VPS-provider guidance, adds a server health check, improves installer safeguards and certificate-renewal documentation, and expands automated validation. Existing v1.0.0 configuration paths and deployment components remain compatible.
+**v1.2.0 - Bilingual Documentation Release** adds a complete Simplified Chinese README, architecture guide, VPS deployment guide, troubleshooting guide, and bilingual navigation. This release does not change networking, installation, service, routing, workflow, or configuration behavior.
 
 ## Features
 
@@ -183,9 +185,21 @@ It reports PASS or FAIL for the systemd service, UDP 443 listener, Certbot certi
 
 ## Documentation
 
+English documentation:
+
 - [System architecture](docs/architecture.md)
 - [AWS reference VPS deployment](docs/aws-deployment.md)
 - [Troubleshooting, deployment, and security checklists](docs/troubleshooting.md)
+
+Simplified Chinese documentation:
+
+- [中文项目主页](README_CN.md)
+- [系统架构](docs/zh-CN/architecture.md)
+- [VPS 部署指南](docs/zh-CN/vps-deployment.md)
+- [故障排查指南](docs/zh-CN/troubleshooting.md)
+
+Configuration references:
+
 - [Hysteria2 server example](configs/hysteria/config.example.yaml)
 - [systemd service example](configs/systemd/hysteria-server.service)
 - [Shadowrocket split-routing example](configs/shadowrocket/Hysteria2-Split-Routing.conf)

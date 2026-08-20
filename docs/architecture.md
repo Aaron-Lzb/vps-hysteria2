@@ -1,5 +1,7 @@
 # System Architecture
 
+English | [简体中文](zh-CN/architecture.md)
+
 ## Overview
 
 This project builds self-hosted encrypted networking infrastructure from a Linux VPS, Hysteria2, TLS, and Shadowrocket split routing.
