@@ -2,62 +2,52 @@
 
 ## Overview
 
-This project builds a personal VPN infrastructure based on AWS EC2, Hysteria2, TLS encryption, and Shadowrocket intelligent routing.
+This project builds self-hosted encrypted networking infrastructure from a Linux VPS, Hysteria2, TLS, and Shadowrocket split routing.
+
+The application architecture is provider-neutral. AWS EC2 is the original tested environment and serves as a reference VPS deployment example, not required infrastructure.
 
 The system consists of:
 
-- Client device
-- Shadowrocket application
-- Hysteria2 encrypted tunnel
-- Custom domain
-- AWS EC2 VPS
-- Let's Encrypt TLS certificate
+- A client device running Shadowrocket
+- A Hysteria2 encrypted tunnel over QUIC and UDP 443
+- A custom domain that resolves to the server
+- An Ubuntu VPS with a public IP address
+- A Let's Encrypt TLS certificate managed by Certbot
+- A systemd service that runs Hysteria2
 
-
-## High-Level Architecture
-
+## High-level architecture
 
 ```text
 +----------------------+
 | iPhone / iPad / Mac  |
 +----------------------+
             |
-            |
             v
 +----------------------+
-|    Shadowrocket      |
-|                      |
-| - VPN client         |
+| Shadowrocket         |
+| - Client connection  |
 | - Traffic routing    |
 | - DNS control        |
 +----------------------+
             |
-            |
             v
 +----------------------+
-|    Hysteria2         |
-|                      |
+| Hysteria2            |
 | QUIC + UDP 443       |
-| TLS encrypted tunnel |
+| TLS encryption       |
 +----------------------+
-            |
             |
             v
 +----------------------+
-| Custom Domain        |
-|                      |
-| DNS -> Elastic IP    |
+| YOUR_DOMAIN          |
+| DNS -> public IP     |
 +----------------------+
-            |
             |
             v
 +----------------------+
-| AWS EC2 VPS          |
-|                      |
-| Ubuntu               |
-| Hysteria2 Server     |
+| Ubuntu Linux VPS     |
+| Hysteria2 + systemd  |
 +----------------------+
-            |
             |
             v
 +----------------------+
@@ -65,226 +55,183 @@ The system consists of:
 +----------------------+
 ```
 
+## VPS provider layer
 
-## Component Description
+The VPS provider supplies compute, a public network interface, and network firewall controls. A suitable provider must allow:
 
+- Ubuntu 22.04 or 24.04
+- A public IPv4 or IPv6 address supported by the chosen DNS record
+- Inbound UDP 443
+- SSH administration
+- TCP 80 when the selected Certbot validation method requires it
 
-## AWS EC2 VPS
+Supported VPS providers may include:
 
-AWS EC2 provides the overseas server environment.
+- AWS EC2
+- Oracle Cloud
+- Google Cloud
+- Azure
+- DigitalOcean
+- Vultr
+- Other Linux VPS providers
 
-Responsibilities:
+Provider-specific terms differ. For example, AWS uses Security Groups and Elastic IPs, while another provider may call them cloud firewalls and reserved IPs. These products serve the same architectural roles.
 
-- Running Hysteria2 server
-- Providing public network access
-- Forwarding encrypted traffic
-- Acting as the Internet exit point
+The [AWS deployment guide](aws-deployment.md) documents the original tested environment as a reference example.
 
+## Component responsibilities
 
-## Elastic IP
+### Linux VPS
 
-Elastic IP provides a static public IP address.
+The VPS is responsible for:
 
-Benefits:
+- Running the Hysteria2 server
+- Accepting Hysteria2 traffic on UDP 443
+- Reading TLS certificate files
+- Forwarding authenticated client traffic
+- Acting as the selected Internet exit point
 
-- Stable endpoint
-- IP does not change after reboot
-- Allows domain mapping
+The project keeps provider infrastructure separate from Hysteria2 configuration so users can migrate providers without redesigning the application layer.
 
+### Stable public IP and domain
 
-## Custom Domain
+A stable public IP is recommended because it prevents DNS mapping from changing after server lifecycle events. It may be called an Elastic IP, reserved IP, static IP, or another provider-specific name.
 
-The domain provides a stable and readable endpoint.
-
-Example:
-
-```
-vpn.example.com
-        |
-        v
-Elastic IP
-        |
-        v
-AWS EC2
-```
-
-
-Advantages:
-
-- Easier client configuration
-- Supports TLS certificates
-- Allows future server migration
-
-
-## Let's Encrypt TLS
-
-TLS provides:
-
-- Server authentication
-- Encrypted communication
-- Protection against man-in-the-middle attacks
-
-
-Certificate management:
-
-```
-Certbot
-    |
-    v
-Let's Encrypt
-    |
-    v
-TLS Certificate
+```text
+YOUR_DOMAIN
+     |
+     v
+Stable public IP
+     |
+     v
+Linux VPS
 ```
 
+The domain supplies a stable server name for client configuration and TLS issuance. It also makes a future server migration easier because the DNS record can be changed without editing the public examples in this repository.
 
-Certificates are automatically renewed.
+### Let's Encrypt and Certbot
 
+TLS provides server authentication and encrypted communication. Certbot obtains and renews the certificate used by Hysteria2.
 
-## Hysteria2
-
-Hysteria2 provides the encrypted communication tunnel.
-
-Main technologies:
-
-- QUIC protocol
-- UDP transport
-- TLS encryption
-
-
-Responsibilities:
-
-- Encrypt client traffic
-- Transport data between client and server
-- Provide high-performance proxy connection
-
-
-## Shadowrocket
-
-Shadowrocket runs on client devices.
-
-Responsibilities:
-
-- Establish Hysteria2 connection
-- Apply routing rules
-- Control DNS behavior
-
-
-Traffic decision example:
-
+```text
+Certbot renewal
+       |
+       v
+renewal deploy hook
+       |
+       v
+restart Hysteria2
+       |
+       v
+load new certificate
 ```
-Mainland China websites
 
-        |
-        v
+The deploy hook belongs under `/etc/letsencrypt/renewal-hooks/deploy/`. It runs after a successful renewal so the service begins using the new certificate.
 
+### Hysteria2
+
+Hysteria2 is responsible for:
+
+- Authenticating the configured client password
+- Encrypting traffic with TLS
+- Transporting traffic with QUIC over UDP
+- Listening on the configured server port
+
+The v1.0.0-compatible server paths remain:
+
+```text
+/usr/local/bin/hysteria
+/etc/hysteria/config.yaml
+/etc/systemd/system/hysteria-server.service
+```
+
+### systemd
+
+systemd starts Hysteria2 after boot and restarts it after a failure. Administrators use the same service name for every supported VPS provider:
+
+```bash
+sudo systemctl status hysteria-server
+```
+
+### Shadowrocket
+
+Shadowrocket is responsible for:
+
+- Establishing the Hysteria2 client connection
+- Applying direct and proxy routing rules
+- Controlling client DNS behavior
+
+The example routing policy sends LAN and mainland China traffic directly and sends remaining traffic through the selected Hysteria2 node.
+
+## Traffic flow
+
+### Direct traffic
+
+```text
+Client
+  |
+  v
+Shadowrocket routing rule
+  |
+  v
 DIRECT
-
-
-Overseas websites
-
-        |
-        v
-
-Hysteria2 Proxy
-
-        |
-        v
-
-AWS EC2
+  |
+  v
+Destination
 ```
 
+Direct routing avoids unnecessary VPS traffic and can reduce latency for local services.
 
-## Traffic Flow
+### Proxied traffic
 
-
-### Mainland China Traffic
-
-Example:
-
-```
-User
- |
- v
+```text
+Client
+  |
+  v
 Shadowrocket
- |
- v
-Routing Rule
- |
- v
-DIRECT
- |
- v
-China Internet
+  |
+  v
+Hysteria2 encrypted tunnel
+  |
+  v
+Linux VPS
+  |
+  v
+Destination
 ```
 
+Only traffic selected by the client rules passes through the VPS.
 
-Benefits:
+## Deployment boundaries
 
-- Lower latency
-- No AWS traffic consumption
-- Better experience for local services
+The project separates three layers:
 
+| Layer | Responsibility | Example |
+| --- | --- | --- |
+| VPS provider | Compute, public IP, and firewall | AWS EC2 reference deployment |
+| Server application | Encrypted transport, TLS, and service lifecycle | Hysteria2, Certbot, systemd |
+| Client | Connection details, DNS, and routing policy | Shadowrocket |
 
-### Overseas Traffic
+This separation is the basis for provider portability and keeps the existing deployment model simple.
 
-Example:
+## Design principles
 
-```
-User
- |
- v
-Shadowrocket
- |
- v
-Hysteria2 Tunnel
- |
- v
-AWS EC2
- |
- v
-Internet
-```
+### Simplicity
 
+Use a small number of standard components and explicit configuration files.
 
-Benefits:
+### Reproducibility
 
-- Private overseas exit
-- Encrypted communication
-- Self-managed infrastructure
+Keep public examples free of personal domains, server addresses, passwords, certificates, and provider credentials. Replace placeholders only in private deployment copies.
 
+### Security
 
-## Design Principles
+Use TLS, restrict provider firewall and SSH rules, protect provider accounts with MFA, and keep private material outside the repository.
 
-This project follows several principles:
+### Reliability
 
-### 1. Simplicity
+Use systemd for startup and recovery and a Certbot deploy hook for certificate reloads.
 
-Avoid unnecessary components.
+### Maintainability
 
-Only use:
-
-- AWS
-- Hysteria2
-- TLS
-- Shadowrocket
-
-
-### 2. Reliability
-
-Use:
-
-- systemd service management
-- Automatic restart
-- Automatic certificate renewal
-
-
-### 3. Maintainability
-
-Keep:
-
-- Configuration templates
-- Deployment scripts
-- Troubleshooting documents
-
-separated and easy to update.
+Keep infrastructure guidance, application configuration, client routing, scripts, and troubleshooting documentation separated so each can evolve without unnecessary redesign.

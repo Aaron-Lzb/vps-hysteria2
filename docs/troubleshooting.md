@@ -1,6 +1,30 @@
 # Troubleshooting Guide
 
-This document summarizes common issues and solutions during deployment and operation of the Hysteria2 VPN system.
+This document summarizes common issues and solutions for the Hysteria2 encrypted networking deployment.
+
+## Deployment checklist
+
+- [ ] Domain resolves correctly
+- [ ] UDP 443 is open in the VPS-provider firewall and host firewall
+- [ ] Hysteria2 is running
+- [ ] TLS certificate is valid
+- [ ] Shadowrocket password matches `YOUR_PASSWORD` on the server
+
+Run the server-side helper for the service, listening port, certificate, and DNS checks:
+
+```bash
+sudo bash scripts/check-status.sh YOUR_DOMAIN
+```
+
+## Security checklist
+
+- [ ] Never upload private keys
+- [ ] Never upload real passwords
+- [ ] Never upload certificates, provider credentials, real server IP addresses, or personal domains
+- [ ] Restrict SSH access to trusted source addresses or networks
+- [ ] Enable MFA on the VPS-provider account
+- [ ] Keep Ubuntu, Hysteria2, and Certbot updated
+- [ ] Review firewall rules and remove ports that are no longer required
 
 The troubleshooting process follows a simple principle:
 
@@ -189,10 +213,10 @@ Server → Client UDP 443
 
 
 
-## Step 3: Check AWS Security Group
+## Step 3: Check the VPS-provider firewall
 
 
-Verify:
+Verify the equivalent provider rule (an AWS Security Group in the reference deployment):
 
 
 | Protocol | Port |
@@ -296,6 +320,23 @@ all simulated renewals succeeded
 # 6. Check Automatic Restart After Renewal
 
 
+Certbot uses a deploy hook to make Hysteria2 load the renewed certificate:
+
+
+```text
+Certbot renewal
+       |
+       v
+renewal hook
+       |
+       v
+restart Hysteria2
+       |
+       v
+load new certificate
+```
+
+
 Certificate renewal hook:
 
 
@@ -304,11 +345,11 @@ Certificate renewal hook:
 ```
 
 
-Example:
+Example installation path:
 
 
 ```
-restart-hysteria.sh
+/etc/letsencrypt/renewal-hooks/deploy/restart-hysteria-after-renew.sh
 ```
 
 
@@ -319,6 +360,15 @@ Content:
 #!/bin/bash
 
 systemctl restart hysteria-server
+```
+
+
+Install the repository script with executable permissions:
+
+
+```bash
+sudo install -m 0755 scripts/restart-hysteria-after-renew.sh \
+  /etc/letsencrypt/renewal-hooks/deploy/restart-hysteria-after-renew.sh
 ```
 
 

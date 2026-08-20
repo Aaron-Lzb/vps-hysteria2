@@ -1,351 +1,205 @@
 # VPS Hysteria2 Shadowrocket
 
+[![Release](https://img.shields.io/github/v/release/Aaron-Lzb/vps-hysteria2-shadowrocket)](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/releases)
+[![License](https://img.shields.io/github/license/Aaron-Lzb/vps-hysteria2-shadowrocket)](LICENSE)
+[![Validation](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/actions/workflows/validate.yml/badge.svg)](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/actions/workflows/validate.yml)
+
+A simple, reproducible framework for self-hosted encrypted networking infrastructure using Hysteria2, TLS, systemd, and Shadowrocket split routing.
+
+AWS EC2 is the original tested environment and is retained as a reference VPS deployment example. It is not required infrastructure; the same architecture can be used with other Linux VPS providers that support Ubuntu and inbound UDP traffic.
+
+## Contents
+
+- [Status](#status)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Supported VPS providers](#supported-vps-providers)
+- [Requirements](#requirements)
+- [Quick start](#quick-start)
+- [Configuration](#configuration)
+- [Certificate renewal](#certificate-renewal)
+- [Health checks](#health-checks)
+- [Documentation](#documentation)
+- [Security](#security)
+
 ## Status
 
-Stable release: v1.0.0
+Current version: **v1.1.0**
 
-This project is a personal VPS deployment framework for Hysteria2 based encrypted networking.
+v1.1.0 generalizes VPS-provider guidance, adds a server health check, improves installer safeguards and certificate-renewal documentation, and expands automated validation. Existing v1.0.0 configuration paths and deployment components remain compatible.
 
-[![Release](https://img.shields.io/github/v/release/Aaron-Lzb/vps-hysteria2-shadowrocket)](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/releases)
+## Features
 
-[![License](https://img.shields.io/github/license/Aaron-Lzb/vps-hysteria2-shadowrocket)](LICENSE)
-
-[![Actions](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/actions/workflows/validate.yml/badge.svg)](https://github.com/Aaron-Lzb/vps-hysteria2-shadowrocket/actions)
-
-
-A private Hysteria2 VPN deployment solution for VPS environments, using TLS encryption and Shadowrocket split routing.
-
-This project provides a simple, reproducible approach to build a personal VPN infrastructure with:
-
-- AWS EC2 VPS
-- Elastic IP
-- Custom domain
-- Let's Encrypt TLS certificate
-- Hysteria2 protocol
-- systemd service management
-- Automatic certificate renewal
-- Shadowrocket split routing
-
+- Self-hosted Hysteria2 server on an Ubuntu VPS
+- QUIC transport over UDP 443 with TLS encryption
+- systemd startup and failure recovery
+- Certbot certificate renewal with a deploy hook
+- Shadowrocket split routing for direct and proxied traffic
+- Provider-neutral application configuration
+- Example files that use placeholders instead of secrets
 
 ## Architecture
 
 ```text
 Phone / iPad / Mac
         |
-        |
    Shadowrocket
         |
+ Hysteria2 (QUIC + UDP 443)
         |
- Hysteria2 Protocol
-   (QUIC + UDP 443)
+   Custom domain
         |
-        |
-  Custom Domain
-        |
-        |
-    AWS EC2 VPS
-        |
+    Linux VPS
         |
      Internet
 ```
 
+The VPS supplies Ubuntu, a public IP address, firewall controls, and UDP 443 connectivity. Hysteria2 supplies the encrypted transport, while Shadowrocket controls client routing. See the [architecture guide](docs/architecture.md) for details.
 
-## Features
+## Supported VPS providers
 
-- Self-managed private VPN server
-- High-performance Hysteria2 transport
-- TLS encrypted communication
-- Automatic TLS certificate renewal
-- Automatic service recovery after reboot
-- Mainland China traffic direct routing
-- Overseas traffic through proxy
-- No dependency on third-party VPN providers
-- Full control of server, traffic, and routing rules
+The framework may be deployed on:
 
+- AWS EC2
+- Oracle Cloud
+- Google Cloud
+- Azure
+- DigitalOcean
+- Vultr
+- Other Linux VPS providers
 
-## Components
-
-| Component          | Purpose                    |
-| ------------------ | -------------------------- |
-| AWS EC2            | Overseas VPS server        |
-| Elastic IP         | Static public IP address   |
-| Custom Domain      | Stable server endpoint     |
-| AWS Security Group | Network access control     |
-| Let's Encrypt      | TLS certificate provider   |
-| Certbot            | Certificate automation     |
-| Hysteria2          | Encrypted proxy protocol   |
-| Shadowrocket       | Client and traffic routing |
-
+Provider product names, firewall interfaces, and static-IP features differ. The [AWS deployment guide](docs/aws-deployment.md) remains the original tested reference example; translate its network requirements to your chosen provider.
 
 ## Requirements
 
 Before deployment, prepare:
 
-- AWS account
-- Ubuntu 22.04/24.04 VPS
-- Registered domain name
-- Shadowrocket client
-- Basic Linux command line knowledge
+- An Ubuntu 22.04 or 24.04 VPS with a public IP address
+- Permission to allow inbound UDP 443 in the provider firewall
+- A registered domain with an A or AAAA record pointing to the VPS
+- A TLS certificate issued through Certbot
+- Shadowrocket on the client device
+- Basic Linux command-line knowledge
 
+TCP 80 may also be needed temporarily for the HTTP-01 certificate challenge. Restrict SSH access to trusted source addresses whenever possible.
 
-## Quick Start
+## Quick start
 
-### Server Side
+### 1. Prepare the VPS
 
-1. Create an AWS EC2 instance
-2. Allocate and attach Elastic IP
-3. Configure domain DNS record
-4. Install Hysteria2 server
-5. Configure TLS certificate
-6. Enable systemd service
-7. Configure automatic certificate renewal
+Create an Ubuntu VPS, assign a stable public IP if the provider offers one, allow inbound UDP 443, and point `YOUR_DOMAIN` to the server. AWS users can follow the [reference AWS deployment guide](docs/aws-deployment.md).
 
+### 2. Install Hysteria2
 
-### Client Side
+Run the installer as root from a trusted checkout:
 
-1. Import Shadowrocket configuration
-2. Add Hysteria2 node
-3. Enable configuration mode
-4. Use split routing:
-
-```
-Mainland China traffic  → DIRECT
-
-Other traffic           → PROXY
+```bash
+sudo bash scripts/install-hysteria.sh
 ```
 
+The installer preserves existing Hysteria2 configuration and systemd unit files. Review its printed next steps before starting the service.
 
-## Deployment Overview
+### 3. Configure the server
 
-The deployment process contains the following steps:
+Copy and edit the examples:
 
-### 1. AWS EC2
-
-Create an Ubuntu VPS instance and configure:
-
-- Security Group
-- UDP 443 access
-- SSH access
-
-
-### 2. Domain Configuration
-
-Configure DNS:
-
-```
-your-domain.com
-        |
-        ↓
-Elastic IP address
-```
-
-The domain provides a stable endpoint for the VPN service.
-
-
-### 3. Hysteria2 Installation
-
-Install and configure Hysteria2 server:
-
-```
-Hysteria2
-      |
-      |
-QUIC + UDP 443
-      |
-      |
-Encrypted tunnel
-```
-
-
-### 4. TLS Certificate
-
-Use Let's Encrypt:
-
-```
-Certbot
-    |
-    ↓
-Let's Encrypt
-    |
-    ↓
-TLS Certificate
-```
-
-Certificates are automatically renewed.
-
-
-### 5. Service Management
-
-Use systemd to keep Hysteria2 running:
-
-- Start automatically after reboot
-- Restart automatically after failure
-- Manage service status easily
-
-
-## Configuration
-
-Example configuration files are provided:
-
-```
+```text
 configs/
-
-├── hysteria/
-│   └── config.example.yaml
-
-├── systemd/
-│   └── hysteria-server.service
-
-└── shadowrocket/
-    └── Hysteria2-Split-Routing.conf
+├── hysteria/config.example.yaml
+├── shadowrocket/Hysteria2-Split-Routing.conf
+└── systemd/hysteria-server.service
 ```
 
+Replace every applicable placeholder:
 
-Before deployment:
-
-Replace all placeholders:
-
-```
+```text
 YOUR_DOMAIN
 YOUR_PASSWORD
+YOUR_EMAIL
 YOUR_SERVER_IP
 ```
 
-with your own information.
+Never commit the completed configuration.
 
+### 4. Enable the service
 
-## Shadowrocket Routing Logic
-
-The recommended routing strategy:
-
-```
-LAN traffic
-      |
-      ↓
-   DIRECT
-
-
-Mainland China domains/IP
-      |
-      ↓
-   DIRECT
-
-
-Other traffic
-      |
-      ↓
-   Hysteria2 Proxy
-      |
-      ↓
- AWS VPS
-```
-
-
-This design helps:
-
-- Reduce unnecessary VPS traffic usage
-- Improve domestic website performance
-- Keep overseas access stable
-
-
-## Troubleshooting
-
-
-### Hysteria2 service failed to start
-
-Check service status:
+After installing the certificate and reviewing `/etc/hysteria/config.yaml`:
 
 ```bash
+sudo systemctl enable --now hysteria-server
 sudo systemctl status hysteria-server
 ```
 
-Check logs:
+### 5. Configure Shadowrocket
+
+Add a Hysteria2 node whose domain, port, and password match the server. Import the example split-routing configuration so local and mainland China traffic is direct and remaining traffic uses the selected proxy.
+
+## Configuration
+
+The server example listens on UDP 443, reads Let's Encrypt certificates from `/etc/letsencrypt/live/YOUR_DOMAIN/`, and authenticates with `YOUR_PASSWORD`. The provided systemd unit continues to use the v1.0.0 paths:
+
+```text
+/usr/local/bin/hysteria
+/etc/hysteria/config.yaml
+/etc/systemd/system/hysteria-server.service
+```
+
+Keeping these paths unchanged preserves compatibility with existing deployments.
+
+## Certificate renewal
+
+Install the renewal hook so Hysteria2 loads a newly renewed certificate:
 
 ```bash
-sudo journalctl -u hysteria-server -f
+sudo install -m 0755 scripts/restart-hysteria-after-renew.sh \
+  /etc/letsencrypt/renewal-hooks/deploy/restart-hysteria-after-renew.sh
+sudo certbot renew --dry-run
 ```
 
+The deploy hook runs only after a successful renewal:
 
-Common causes:
-
-- Incorrect configuration format
-- TLS certificate permission issue
-- Wrong certificate path
-
-
-### TLS certificate permission denied
-
-Verify:
-
-- Certificate path
-- File permission
-- systemd service user
-
-
-Example:
-
-```
-/etc/letsencrypt/live/YOUR_DOMAIN/
+```text
+Certbot renewal
+       |
+       v
+renewal deploy hook
+       |
+       v
+restart Hysteria2
+       |
+       v
+load new certificate
 ```
 
+## Health checks
 
-### Shadowrocket connection timeout
-
-Check network traffic:
+Run the status helper on the server after replacing or passing the domain placeholder:
 
 ```bash
-sudo tcpdump -i any -n udp port 443
+sudo bash scripts/check-status.sh YOUR_DOMAIN
 ```
 
-Verify:
+It reports PASS or FAIL for the systemd service, UDP 443 listener, Certbot certificate information, and DNS resolution. Missing diagnostic commands are reported clearly instead of causing an abrupt exit.
 
-- AWS Security Group allows UDP 443
-- Domain points to correct IP
-- Hysteria2 service is running
-- Password matches server configuration
+## Documentation
 
+- [System architecture](docs/architecture.md)
+- [AWS reference VPS deployment](docs/aws-deployment.md)
+- [Troubleshooting, deployment, and security checklists](docs/troubleshooting.md)
+- [Hysteria2 server example](configs/hysteria/config.example.yaml)
+- [systemd service example](configs/systemd/hysteria-server.service)
+- [Shadowrocket split-routing example](configs/shadowrocket/Hysteria2-Split-Routing.conf)
 
-## Security Notice
+## Security
 
-Never upload sensitive information:
+- Never upload private keys, certificates, real passwords, provider credentials, personal domains, or server IP addresses.
+- Keep `YOUR_DOMAIN`, `YOUR_PASSWORD`, `YOUR_EMAIL`, and `YOUR_SERVER_IP` in public examples.
+- Restrict SSH access and enable MFA on the VPS-provider account.
+- Review provider firewall rules and installed scripts before use.
+- Keep Ubuntu, Hysteria2, and Certbot updated through normal maintenance.
 
-- AWS SSH private keys
-- TLS private keys
-- Real passwords
-- Personal server IP addresses
-- Personal domain information
-
-
-Use the example configuration files provided in this repository.
-
-For public repositories, always replace real credentials with placeholders.
-
-
-## Maintenance
-
-Recommended maintenance:
-
-Monthly:
-
-```bash
-systemctl status hysteria-server
-```
-
-Check:
-
-- Service status
-- Server availability
-- AWS billing
-
-
-Every few months:
-
-Verify:
-
-- Domain expiration
-- Certificate renewal status
-
+For diagnosis, use [the troubleshooting guide](docs/troubleshooting.md) and check the service, network, UDP firewall, TLS certificate, authentication, and routing layers in order.
 
 ## License
 
-MIT License
+See [LICENSE](LICENSE).

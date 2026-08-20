@@ -1,4 +1,4 @@
-name: Validate Configuration Files
+name: Validate
 
 on:
   push:
@@ -12,6 +12,8 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -20,8 +22,13 @@ jobs:
       - name: Validate YAML files
         uses: ibiqlik/action-yamllint@v3
         with:
-          file_or_dir: configs
+          config_file: .yamllint.yml
+          file_or_dir: ".github/workflows configs .yamllint.yml"
 
-      - name: Check shell scripts
+      - name: Check shell syntax
         run: |
           bash -n scripts/*.sh
+
+      - name: Run ShellCheck
+        run: |
+          shellcheck scripts/*.sh
