@@ -16,11 +16,14 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
 readonly CHECK_SCRIPT="${SCRIPT_DIR}/check-status.sh"
 readonly CHECK_COMMAND="/usr/local/bin/hysteria-check"
+readonly UPDATE_SCRIPT="${SCRIPT_DIR}/update-tools.sh"
+readonly UPDATE_COMMAND="/usr/local/bin/hysteria-update"
 
 installer_file=""
 service_template=""
 config_existed_before=0
 check_script_available=0
+update_script_available=0
 
 cleanup() {
   if [[ -n "${installer_file}" && -f "${installer_file}" ]]; then
@@ -81,6 +84,13 @@ if [[ -r ${CHECK_SCRIPT} ]]; then
 else
   printf '[WARN] Maintenance script is missing from the checkout: %s\n' "${CHECK_SCRIPT}" >&2
   printf '[WARN] Hysteria2 installation will continue, but hysteria-check cannot be installed.\n' >&2
+fi
+
+if [[ -r ${UPDATE_SCRIPT} ]]; then
+  update_script_available=1
+else
+  printf '[WARN] Maintenance updater is missing from the checkout: %s\n' "${UPDATE_SCRIPT}" >&2
+  printf '[WARN] Hysteria2 installation will continue, but hysteria-update cannot be installed.\n' >&2
 fi
 
 printf '\n[1/6] Refreshing package metadata...\n'
@@ -148,10 +158,10 @@ fi
 systemctl daemon-reload
 systemctl enable "${SERVICE_NAME}"
 
-printf '\n[6/6] Installing the maintenance command...\n'
-# Install a standalone copy so the command keeps working if the repository
+printf '\n[6/6] Installing the maintenance commands...\n'
+# Install standalone copies so the commands keep working if the repository
 # checkout is later moved or removed. Re-running the installer safely refreshes
-# the project-managed copy without creating another command or symlink.
+# the project-managed copies without creating duplicate commands or symlinks.
 if [[ ${check_script_available} -eq 1 ]]; then
   install -m 0755 "${CHECK_SCRIPT}" "${CHECK_COMMAND}"
   if [[ ! -x ${CHECK_COMMAND} ]]; then
@@ -161,6 +171,17 @@ if [[ ${check_script_available} -eq 1 ]]; then
   printf '[PASS] Installed maintenance command: %s\n' "${CHECK_COMMAND}"
 else
   printf '[WARN] Skipped hysteria-check because the source script was unavailable.\n'
+fi
+
+if [[ ${update_script_available} -eq 1 ]]; then
+  install -m 0755 "${UPDATE_SCRIPT}" "${UPDATE_COMMAND}"
+  if [[ ! -x ${UPDATE_COMMAND} ]]; then
+    printf '[ERROR] Maintenance updater was not installed correctly: %s\n' "${UPDATE_COMMAND}" >&2
+    exit 1
+  fi
+  printf '[PASS] Installed maintenance updater: %s\n' "${UPDATE_COMMAND}"
+else
+  printf '[WARN] Skipped hysteria-update because the source script was unavailable.\n'
 fi
 
 printf '\nInstallation preparation completed.\n'
@@ -174,7 +195,12 @@ printf '   sudo systemctl start %s\n' "${SERVICE_NAME}"
 printf '   sudo systemctl status %s\n' "${SERVICE_NAME}"
 printf '6. Install scripts/restart-hysteria-after-renew.sh under:\n'
 printf '   /etc/letsencrypt/renewal-hooks/deploy/\n'
-printf '7. Verify the deployment with: hysteria-check\n'
+printf '7. Verify the deployment:\n'
+printf '   hysteria-check\n'
+printf '8. Update project maintenance tools later:\n'
+printf '   sudo hysteria-update\n'
 printf '\nMaintenance check:\n'
 printf 'hysteria-check\n'
 printf 'If automatic public-IP detection fails: hysteria-check <PUBLIC_IP>\n'
+printf '\nMaintenance tool updates:\n'
+printf 'sudo hysteria-update\n'

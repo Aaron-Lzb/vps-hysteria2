@@ -24,6 +24,7 @@ AWS EC2 is the original tested VPS reference. It is not required infrastructure;
 - [Server configuration](#server-configuration)
 - [Certificate renewal](#certificate-renewal)
 - [Health checks](#health-checks)
+- [Maintenance tool updates](#maintenance-tool-updates)
 - [Documentation](#documentation)
 - [Security](#security)
 
@@ -32,6 +33,8 @@ AWS EC2 is the original tested VPS reference. It is not required infrastructure;
 Current version: **v1.4.0**
 
 **v1.4.0 - Global Maintenance Command** installs the read-only status helper as `hysteria-check`, so routine checks work from any directory. The command normally detects the VPS public IPv4 automatically and retains an optional manual form.
+
+The `main` branch also contains unreleased maintenance UX work, including color-coded status output and `hysteria-update`. `VERSION` remains `1.4.0` until that work completes release acceptance.
 
 The v1.3.0 client-neutral positioning and all earlier release history remain unchanged.
 
@@ -42,6 +45,7 @@ The v1.3.0 client-neutral positioning and all earlier release history remain unc
 - systemd startup and failure recovery
 - Certbot certificate renewal with a deploy hook
 - Global `hysteria-check` command for read-only maintenance diagnostics
+- Global `hysteria-update` command for safely updating project maintenance tools
 - Provider-neutral server configuration
 - Client-neutral connection model
 - Maintained Shadowrocket split-routing example
@@ -112,7 +116,7 @@ Run the installer as root from a trusted checkout:
 sudo bash scripts/install-hysteria.sh
 ```
 
-The installer preserves existing Hysteria2 configuration and systemd unit files. It also installs a standalone `/usr/local/bin/hysteria-check` copy that does not depend on keeping the repository checkout. Review the printed next steps before starting the service.
+The installer preserves existing Hysteria2 configuration and systemd unit files. It also installs standalone `/usr/local/bin/hysteria-check` and `/usr/local/bin/hysteria-update` commands that do not depend on keeping the repository checkout. Review the printed next steps before starting the service.
 
 ### 3. Configure the server
 
@@ -242,6 +246,18 @@ sudo install -m 0755 scripts/check-status.sh /usr/local/bin/hysteria-check
 ```
 
 `HEALTHY` exits with status 0; `ATTENTION REQUIRED` and `CRITICAL` exit with status 1. UDP 443 listening confirms only that the server appears to be listening locally. It does not prove full client-to-server connectivity or validate cloud-firewall rules.
+
+## Maintenance tool updates
+
+Update the project-provided maintenance tools from any directory:
+
+```bash
+sudo hysteria-update
+```
+
+The updater currently manages only `/usr/local/bin/hysteria-check`. It downloads `scripts/check-status.sh` from the official `Aaron-Lzb/vps-hysteria2` repository into a temporary file, validates the Bash shebang and syntax, and replaces the installed command only after validation succeeds. The repository checkout does not need to remain on the VPS.
+
+`hysteria-update` is **not a Hysteria2 server updater**. It does not update the Hysteria2 binary, modify `/etc/hysteria/config.yaml`, restart services, change firewall rules or certificates, renew certificates, or run `apt update` or `apt upgrade`. If download or validation fails, the existing `hysteria-check` installation remains unchanged.
 
 ## Documentation
 

@@ -36,3 +36,7 @@ jobs:
       - name: Test terminal color behavior
         run: |
           bash tests/check-status-color.sh
+
+      - name: Test maintenance tool updater
+        run: |
+          bash tests/update-tools.sh

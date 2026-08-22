@@ -23,6 +23,7 @@ AWS EC2 是最初并持续保留的 VPS 测试参考，不是必需基础设施�
 - [服务端配置](#服务端配置)
 - [证书自动续期](#证书自动续期)
 - [状态检查](#状态检查)
+- [维护工具更新](#维护工具更新)
 - [项目结构](#项目结构)
 - [文档导航](#文档导航)
 - [安全注意事项](#安全注意事项)
@@ -33,6 +34,8 @@ AWS EC2 是最初并持续保留的 VPS 测试参考，不是必需基础设施�
 
 **v1.4.0 - 全局维护命令** 会把只读状态检查安装为 `hysteria-check`，日常维护无需先进入项目目录。命令通常会自动检测 VPS 公网 IPv4，也保留手工传入地址的方式。
 
+`main` 分支还包含尚未正式发布的维护 UX 改进，包括彩色状态输出和 `hysteria-update`。这些功能完成发布验收前，`VERSION` 继续保持 `1.4.0`。
+
 v1.3.0 的客户端中立化定位及此前发布历史保持不变。
 
 ## 项目特点
@@ -42,6 +45,7 @@ v1.3.0 的客户端中立化定位及此前发布历史保持不变。
 - 使用 systemd 管理开机启动和异常恢复
 - 使用 Certbot 管理证书及续期钩子
 - 提供全局 `hysteria-check` 只读维护检查
+- 提供全局 `hysteria-update` 安全更新项目维护工具
 - 服务端配置不绑定 VPS 提供商或客户端品牌
 - 保留经过项目维护的 Shadowrocket 分流示例
 - 提供中英文部署和排错文档
@@ -104,7 +108,7 @@ AWS 用户可参考[中文 VPS 部署指南](docs/zh-CN/vps-deployment.md)。
 sudo bash scripts/install-hysteria.sh
 ```
 
-安装脚本会检查 root 权限和 Ubuntu 环境，保留已有配置及 systemd 服务文件，并安装独立的 `/usr/local/bin/hysteria-check` 副本；之后移动或删除仓库副本不会破坏该命令。
+安装脚本会检查 root 权限和 Ubuntu 环境，保留已有配置及 systemd 服务文件，并安装独立的 `/usr/local/bin/hysteria-check` 和 `/usr/local/bin/hysteria-update`；之后移动或删除仓库副本不会破坏这些命令。
 
 ### 3. 准备服务端配置
 
@@ -275,6 +279,18 @@ sudo install -m 0755 scripts/check-status.sh /usr/local/bin/hysteria-check
 
 `HEALTHY` 的退出状态为 0；`ATTENTION REQUIRED` 和 `CRITICAL` 的退出状态为 1。本机存在 UDP 443 监听只说明服务器套接字正常，不能证明云防火墙已放行或客户端能够端到端连接。
 
+## 维护工具更新
+
+可以从任意目录更新项目提供的维护工具：
+
+```bash
+sudo hysteria-update
+```
+
+当前 updater 只管理 `/usr/local/bin/hysteria-check`。它从官方 `Aaron-Lzb/vps-hysteria2` 仓库下载 `scripts/check-status.sh` 到临时文件，验证 Bash shebang 和语法后才替换已安装命令；VPS 无需长期保留 repository checkout。
+
+`hysteria-update` **不是 Hysteria2 服务端 updater**。它不会更新 Hysteria2 binary，不会修改 `/etc/hysteria/config.yaml`，不会重启服务、修改 firewall 或 certificate、执行证书续期，也不会运行 `apt update` 或 `apt upgrade`。下载或验证失败时，现有 `hysteria-check` 保持不变。
+
 遇到问题时按以下顺序检查：
 
 ```text
@@ -311,7 +327,11 @@ vps-hysteria2/
 ├── scripts/
 │   ├── check-status.sh
 │   ├── install-hysteria.sh
-│   └── restart-hysteria-after-renew.sh
+│   ├── restart-hysteria-after-renew.sh
+│   └── update-tools.sh
+├── tests/
+│   ├── check-status-color.sh
+│   └── update-tools.sh
 ├── LICENSE
 ├── README.md
 ├── README_CN.md
