@@ -17,25 +17,67 @@ readonly TARGET="${1:-}"
 readonly TLS_WARNING_DAYS=30
 readonly DISK_WARNING_PERCENT=80
 readonly DISK_CRITICAL_PERCENT=90
+readonly GREEN=$'\033[32m'
+readonly CYAN=$'\033[36m'
+readonly YELLOW=$'\033[33m'
+readonly RED=$'\033[31m'
+readonly RESET=$'\033[0m'
+
+color_stdout=0
+color_stderr=0
+
+# Enable colors only for interactive output. Check stdout and stderr
+# independently so redirecting either stream never adds escape sequences to it.
+if [[ -z ${NO_COLOR+x} && ${TERM:-} != "dumb" ]]; then
+  [[ -t 1 ]] && color_stdout=1
+  [[ -t 2 ]] && color_stderr=1
+fi
+
+readonly color_stdout
+readonly color_stderr
 
 warnings=()
 criticals=()
 
+print_stdout_status() {
+  local color=$1
+  local label=$2
+  local message=$3
+
+  if [[ ${color_stdout} -eq 1 ]]; then
+    printf '%s[%s]%s %s\n' "${color}" "${label}" "${RESET}" "${message}"
+  else
+    printf '[%s] %s\n' "${label}" "${message}"
+  fi
+}
+
+print_stderr_status() {
+  local color=$1
+  local label=$2
+  local message=$3
+
+  if [[ ${color_stderr} -eq 1 ]]; then
+    printf '%s[%s]%s %s\n' "${color}" "${label}" "${RESET}" "${message}" >&2
+  else
+    printf '[%s] %s\n' "${label}" "${message}" >&2
+  fi
+}
+
 pass() {
-  printf '[PASS] %s\n' "$1"
+  print_stdout_status "${GREEN}" "PASS" "$1"
 }
 
 info() {
-  printf '[INFO] %s\n' "$1"
+  print_stdout_status "${CYAN}" "INFO" "$1"
 }
 
 warn() {
-  printf '[WARN] %s\n' "$1"
+  print_stdout_status "${YELLOW}" "WARN" "$1"
   warnings+=("$1")
 }
 
 critical() {
-  printf '[CRITICAL] %s\n' "$1" >&2
+  print_stderr_status "${RED}" "CRITICAL" "$1"
   criticals+=("$1")
 }
 
@@ -44,10 +86,18 @@ print_findings() {
 
   printf 'Findings:\n' >&2
   for finding in "${criticals[@]}"; do
-    printf -- '- CRITICAL: %s\n' "${finding}" >&2
+    if [[ ${color_stderr} -eq 1 ]]; then
+      printf -- '- %sCRITICAL:%s %s\n' "${RED}" "${RESET}" "${finding}" >&2
+    else
+      printf -- '- CRITICAL: %s\n' "${finding}" >&2
+    fi
   done
   for finding in "${warnings[@]}"; do
-    printf -- '- WARNING: %s\n' "${finding}" >&2
+    if [[ ${color_stderr} -eq 1 ]]; then
+      printf -- '- %sWARNING:%s %s\n' "${YELLOW}" "${RESET}" "${finding}" >&2
+    else
+      printf -- '- WARNING: %s\n' "${finding}" >&2
+    fi
   done
 }
 
@@ -393,16 +443,28 @@ fi
 
 printf '\n'
 if [[ ${#criticals[@]} -gt 0 ]]; then
-  printf 'Overall status: CRITICAL (%d critical, %d warning)\n' "${#criticals[@]}" "${#warnings[@]}" >&2
+  if [[ ${color_stderr} -eq 1 ]]; then
+    printf 'Overall status: %sCRITICAL (%d critical, %d warning)%s\n' "${RED}" "${#criticals[@]}" "${#warnings[@]}" "${RESET}" >&2
+  else
+    printf 'Overall status: CRITICAL (%d critical, %d warning)\n' "${#criticals[@]}" "${#warnings[@]}" >&2
+  fi
   print_findings
   exit 1
 fi
 
 if [[ ${#warnings[@]} -gt 0 ]]; then
-  printf 'Overall status: ATTENTION REQUIRED (%d warning)\n' "${#warnings[@]}" >&2
+  if [[ ${color_stderr} -eq 1 ]]; then
+    printf 'Overall status: %sATTENTION REQUIRED (%d warning)%s\n' "${YELLOW}" "${#warnings[@]}" "${RESET}" >&2
+  else
+    printf 'Overall status: ATTENTION REQUIRED (%d warning)\n' "${#warnings[@]}" >&2
+  fi
   print_findings
   exit 1
 fi
 
-printf 'Overall status: HEALTHY\n'
+if [[ ${color_stdout} -eq 1 ]]; then
+  printf 'Overall status: %sHEALTHY%s\n' "${GREEN}" "${RESET}"
+else
+  printf 'Overall status: HEALTHY\n'
+fi
 exit 0

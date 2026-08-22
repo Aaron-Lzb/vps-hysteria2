@@ -27,8 +27,12 @@ jobs:
 
       - name: Check shell syntax
         run: |
-          bash -n scripts/*.sh
+          bash -n scripts/*.sh tests/*.sh
 
       - name: Run ShellCheck
         run: |
-          shellcheck scripts/*.sh
+          shellcheck scripts/*.sh tests/*.sh
+
+      - name: Test terminal color behavior
+        run: |
+          bash tests/check-status-color.sh
