@@ -87,11 +87,15 @@ done
 EOF
 chmod 0755 "${test_root}/fake-bin/wget"
 export DOWNLOAD_FIXTURE="${valid_download}"
-PATH="${test_root}/fake-bin" download_check_script "${test_root}/wget-download"
+DOWNLOAD_PATH="${test_root}/fake-bin" /bin/bash -c \
+  'source "$1"; PATH="$DOWNLOAD_PATH"; download_check_script "$2"' \
+  _ "${TEST_UPDATE_SCRIPT}" "${test_root}/wget-download"
 cmp -s "${valid_download}" "${test_root}/wget-download" || fail "wget fallback did not download the fixture"
 
 set +e
-PATH="${test_root}/empty-bin" download_check_script "${test_root}/missing-tools-download"
+DOWNLOAD_PATH="${test_root}/empty-bin" /bin/bash -c \
+  'source "$1"; PATH="$DOWNLOAD_PATH"; download_check_script "$2"' \
+  _ "${TEST_UPDATE_SCRIPT}" "${test_root}/missing-tools-download"
 missing_tools_status=$?
 set -e
 [[ ${missing_tools_status} -ne 0 ]] || fail "missing curl/wget was not rejected"
