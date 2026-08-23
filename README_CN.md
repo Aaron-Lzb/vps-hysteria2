@@ -17,6 +17,7 @@ AWS EC2 是最初并持续保留的 VPS 测试参考，不是必需基础设施�
 - [项目状态](#项目状态)
 - [项目特点](#项目特点)
 - [系统架构](#系统架构)
+- [零基础使用说明](#零基础使用说明)
 - [部署前准备](#部署前准备)
 - [快速开始](#快速开始)
 - [客户端配置](#客户端配置)
@@ -73,6 +74,12 @@ v1.3.0 的客户端中立化定位及此前发布历史保持不变。
 VPS 提供 Ubuntu、公网地址和防火墙；Hysteria2 负责认证及加密代理传输；客户端负责填写连接参数，并在支持时管理 DNS 和分流规则。
 
 客户端可以更换，但服务端的域名、UDP 端口、密码和 TLS 证书必须与客户端配置匹配。详见[中文系统架构](docs/zh-CN/architecture.md)。
+
+## 零基础使用说明
+
+如果你没有编程或 Linux 经验，请直接阅读[零基础使用说明：搭建个人 Hysteria2 节点](docs/zh-CN/beginner-guide.md)。它从购买 VPS、设置域名和防火墙开始，逐步说明服务器安装、证书申请、Shadowrocket 配置、维护和排错。
+
+本项目创建的是自用 Hysteria2 加密代理节点，不包含商业“机场”所需的用户系统、订阅、套餐、流量计费、支付或防滥用功能。
 
 ## 部署前准备
 
@@ -321,6 +328,7 @@ vps-hysteria2/
 │   ├── clients/shadowrocket.md
 │   └── zh-CN/
 │       ├── architecture.md
+│       ├── beginner-guide.md
 │       ├── vps-deployment.md
 │       ├── troubleshooting.md
 │       └── clients/shadowrocket.md
@@ -343,6 +351,7 @@ vps-hysteria2/
 中文：
 
 - [中文项目主页](README_CN.md)
+- [零基础使用说明](docs/zh-CN/beginner-guide.md)
 - [系统架构](docs/zh-CN/architecture.md)
 - [VPS 部署指南](docs/zh-CN/vps-deployment.md)
 - [故障排查指南](docs/zh-CN/troubleshooting.md)
