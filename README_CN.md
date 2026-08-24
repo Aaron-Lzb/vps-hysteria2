@@ -284,6 +284,8 @@ bash scripts/check-status.sh <PUBLIC_IP>
 sudo install -m 0755 scripts/check-status.sh /usr/local/bin/hysteria-check
 ```
 
+在交互式终端中，状态标签会使用颜色方便快速识别：`PASS` 为绿色，`INFO` 为青色，`WARN` 为黄色，`CRITICAL` 为红色。非 TTY 输出、`TERM=dumb` 或设置 `NO_COLOR` 时会自动禁用颜色，因此管道、重定向、CI 和自动化脚本仍保持纯文本输出。
+
 `HEALTHY` 的退出状态为 0；`ATTENTION REQUIRED` 和 `CRITICAL` 的退出状态为 1。本机存在 UDP 443 监听只说明服务器套接字正常，不能证明云防火墙已放行或客户端能够端到端连接。
 
 ## 维护工具更新

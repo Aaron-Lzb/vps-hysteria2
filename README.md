@@ -245,6 +245,8 @@ An existing checkout can install or refresh only the global command without reru
 sudo install -m 0755 scripts/check-status.sh /usr/local/bin/hysteria-check
 ```
 
+When run in an interactive terminal, status labels are color-coded for quicker scanning: `PASS` is green, `INFO` is cyan, `WARN` is yellow, and `CRITICAL` is red. Colors are automatically disabled for non-TTY output, `TERM=dumb`, or when `NO_COLOR` is set, so pipes, redirects, CI logs, and automation continue to receive plain text.
+
 `HEALTHY` exits with status 0; `ATTENTION REQUIRED` and `CRITICAL` exit with status 1. UDP 443 listening confirms only that the server appears to be listening locally. It does not prove full client-to-server connectivity or validate cloud-firewall rules.
 
 ## Maintenance tool updates
