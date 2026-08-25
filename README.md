@@ -259,6 +259,8 @@ sudo hysteria-update
 
 The updater currently manages only `/usr/local/bin/hysteria-check`. It downloads `scripts/check-status.sh` from the official `Aaron-Lzb/vps-hysteria2` repository into a temporary file, validates the Bash shebang and syntax, and replaces the installed command only after validation succeeds. The repository checkout does not need to remain on the VPS.
 
+The updater follows the repository `main` branch rather than the latest tagged Release, so it may install validated maintenance-tool changes newer than the current stable release. This does not update the installed Hysteria2 server binary or change the project `VERSION`.
+
 `hysteria-update` is **not a Hysteria2 server updater**. It does not update the Hysteria2 binary, modify `/etc/hysteria/config.yaml`, restart services, change firewall rules or certificates, renew certificates, or run `apt update` or `apt upgrade`. If download or validation fails, the existing `hysteria-check` installation remains unchanged.
 
 ## Documentation

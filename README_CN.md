@@ -298,6 +298,8 @@ sudo hysteria-update
 
 当前 updater 只管理 `/usr/local/bin/hysteria-check`。它从官方 `Aaron-Lzb/vps-hysteria2` 仓库下载 `scripts/check-status.sh` 到临时文件，验证 Bash shebang 和语法后才替换已安装命令；VPS 无需长期保留 repository checkout。
 
+当前 updater 跟随仓库 `main` 分支，而不是最新的已标记 Release，因此可能获取比当前稳定版本更新、但已经过验证的维护工具代码。该操作不会更新已安装的 Hysteria2 服务端程序，也不会改变项目 `VERSION`。
+
 `hysteria-update` **不是 Hysteria2 服务端 updater**。它不会更新 Hysteria2 binary，不会修改 `/etc/hysteria/config.yaml`，不会重启服务、修改 firewall 或 certificate、执行证书续期，也不会运行 `apt update` 或 `apt upgrade`。下载或验证失败时，现有 `hysteria-check` 保持不变。
 
 遇到问题时按以下顺序检查：
