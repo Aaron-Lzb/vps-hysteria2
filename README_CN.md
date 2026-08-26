@@ -225,6 +225,8 @@ auth:
 - `tls.key`：TLS 私钥，绝不能上传。
 - `YOUR_PASSWORD`：必须与客户端密码完全一致。
 
+默认部署在 UDP 443 上使用标准 QUIC/TLS，并配置 HTTP masquerade，为非 Hysteria2 HTTP 请求提供正常的 Web 响应。项目默认不启用 Salamander 等额外协议混淆；只有在实际网络环境确有需要时才应考虑增加额外混淆。
+
 固定服务端路径：
 
 ```text
