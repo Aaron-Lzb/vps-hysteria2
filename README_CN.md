@@ -170,7 +170,7 @@ hysteria-check
 hysteria-check <PUBLIC_IP>
 ```
 
-脚本会拒绝私网和特殊用途 IPv4，并以只读方式检查 Hysteria2 服务、本机 UDP 443 监听、TLS 证书剩余时间、Certbot 续期定时器、安全更新、重启状态、根文件系统用量、系统和 Hysteria2 版本，以及公网 IP 或可选 DNS 信息。它不会续期证书、安装更新、重启服务或修改配置。无需 root 权限，但 `sudo hysteria-check` 可能读取到普通用户无权查看的证书或服务信息。
+脚本会拒绝私网和特殊用途 IPv4，并以只读方式检查 Hysteria2 服务、本机 UDP 443 监听、TLS 证书剩余时间、Certbot 续期定时器、安全更新、重启状态、根文件系统用量、系统和 Hysteria2 版本，以及公网 IP 或可选 DNS 信息。它不强制要求 root 权限，并始终只执行只读检查：不会续期证书、安装更新、重启服务或修改配置。需要尽可能完整的服务器诊断时，建议使用 `sudo hysteria-check`，因为普通用户可能无权读取部分证书或服务信息。
 
 ## 客户端配置
 

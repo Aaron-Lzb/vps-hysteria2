@@ -233,7 +233,7 @@ The public IPv4 is normally detected automatically through short, read-only HTTP
 hysteria-check <PUBLIC_IP>
 ```
 
-The helper rejects private and special-use IPv4 ranges. It reports service and local UDP 443 state, TLS certificate lifetime, Certbot renewal timer state, pending Ubuntu security updates, reboot status, root filesystem use, OS and installed Hysteria2 versions, and public-IP or optional DNS information. It never renews certificates, installs updates, restarts services, or changes configuration. Root is not required, but `sudo hysteria-check` may reveal certificate or service details that the current user cannot read.
+The helper rejects private and special-use IPv4 ranges. It reports service and local UDP 443 state, TLS certificate lifetime, Certbot renewal timer state, pending Ubuntu security updates, reboot status, root filesystem use, OS and installed Hysteria2 versions, and public-IP or optional DNS information. It does not require root privileges and remains read-only: it never renews certificates, installs updates, restarts services, or changes configuration. For the most complete server-side diagnostics, `sudo hysteria-check` is recommended because elevated read access may reveal certificate or service details unavailable to an unprivileged user.
 
 For repository development or an existing deployment that has not rerun the installer, the original entry point remains supported:
 
