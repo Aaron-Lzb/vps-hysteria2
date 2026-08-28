@@ -268,6 +268,12 @@ Certbot 续期成功
 hysteria-check
 ```
 
+日常检查 VPS/Hysteria2 状态并获取尽可能完整的信息时，推荐使用以下命令；它仍然只执行只读检查：
+
+```bash
+sudo hysteria-check
+```
+
 自动检测不可用时：
 
 ```bash

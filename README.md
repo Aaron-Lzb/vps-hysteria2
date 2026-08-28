@@ -227,6 +227,12 @@ Run the status helper on the server:
 hysteria-check
 ```
 
+For a routine VPS/Hysteria2 status check with the most complete visibility, use the following recommended command; it remains read-only:
+
+```bash
+sudo hysteria-check
+```
+
 The public IPv4 is normally detected automatically through short, read-only HTTPS requests. If detection is unavailable, provide the address explicitly:
 
 ```bash
