@@ -39,6 +39,8 @@ Mainland China domains and IPs -> DIRECT
 All remaining traffic          -> PROXY
 ```
 
+The existing routing rules are largely independent of the specific proxy node, so switching to another compatible node usually does not require changing them.
+
 ### Mainland China and LAN traffic
 
 ```text

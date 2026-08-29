@@ -39,6 +39,8 @@ configs/shadowrocket/Hysteria2-Split-Routing.conf
 其他流量                -> PROXY
 ```
 
+现有分流规则与具体代理节点相对独立，切换兼容节点时通常无需修改分流规则。
+
 ### 中国大陆与局域网流量
 
 ```text
