@@ -100,6 +100,8 @@ Before deployment, prepare:
 - A client version that explicitly supports Hysteria2
 - Basic Linux command-line knowledge
 
+A stable public IP is recommended so a VPS restart or address reassignment does not leave the domain pointing to an outdated address.
+
 TCP 80 may be needed temporarily for the HTTP-01 certificate challenge. Restrict SSH access to trusted source addresses whenever possible.
 
 ## Quick start
