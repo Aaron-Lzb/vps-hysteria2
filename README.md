@@ -202,6 +202,8 @@ Changing client software does not require changing these server paths.
 
 Install the renewal hook so Hysteria2 loads a newly renewed certificate:
 
+Certificate renewal is handled automatically by the Certbot timer, so manually running `certbot renew` is normally unnecessary.
+
 ```bash
 sudo install -m 0755 scripts/restart-hysteria-after-renew.sh \
   /etc/letsencrypt/renewal-hooks/deploy/restart-hysteria-after-renew.sh

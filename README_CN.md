@@ -243,6 +243,8 @@ auth:
 
 安装 Certbot deploy hook：
 
+证书续期由 Certbot 定时器自动处理，通常不需要手动执行 `certbot renew`。
+
 ```bash
 sudo install -m 0755 scripts/restart-hysteria-after-renew.sh \
   /etc/letsencrypt/renewal-hooks/deploy/restart-hysteria-after-renew.sh
