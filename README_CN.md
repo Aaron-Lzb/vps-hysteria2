@@ -276,6 +276,8 @@ hysteria-check
 sudo hysteria-check
 ```
 
+建议在系统更新或重启后再次运行 `hysteria-check`，确认服务和监听状态正常。
+
 自动检测不可用时：
 
 ```bash

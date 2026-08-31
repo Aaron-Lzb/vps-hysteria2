@@ -235,6 +235,8 @@ For a routine VPS/Hysteria2 status check with the most complete visibility, use 
 sudo hysteria-check
 ```
 
+Run it again after system updates or a reboot to confirm that the service and listener are operating normally.
+
 The public IPv4 is normally detected automatically through short, read-only HTTPS requests. If detection is unavailable, provide the address explicitly:
 
 ```bash
