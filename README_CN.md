@@ -147,6 +147,8 @@ sudo systemctl enable --now hysteria-server
 sudo systemctl status hysteria-server
 ```
 
+首次部署完成后，建议先运行 `hysteria-check` 确认服务和监听状态，再配置客户端。
+
 ### 5. 配置客户端
 
 在支持 Hysteria2 的客户端中填写：

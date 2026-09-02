@@ -148,6 +148,8 @@ sudo systemctl enable --now hysteria-server
 sudo systemctl status hysteria-server
 ```
 
+After the first deployment, run `hysteria-check` before configuring a client to confirm the service and listener state.
+
 ### 5. Configure a client
 
 In a compatible Hysteria2 client, configure the server domain, UDP port `443`, password, and TLS/SNI name. The password and domain must match the server.
