@@ -36,8 +36,6 @@ Current version: **v1.4.0**
 
 The `main` branch also contains unreleased maintenance UX work, including color-coded status output and `hysteria-update`. `VERSION` remains `1.4.0` until that work completes release acceptance.
 
-The v1.3.0 client-neutral positioning and all earlier release history remain unchanged.
-
 ## Features
 
 - Self-hosted Hysteria2 proxy server on an Ubuntu VPS
