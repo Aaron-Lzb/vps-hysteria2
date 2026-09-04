@@ -10,8 +10,6 @@ A simple and practical Hysteria2 deployment solution for VPS servers, with TLS, 
 
 Deploy Hysteria2 on a VPS and connect using any compatible Hysteria2 client. Shadowrocket remains a documented client example, but the server deployment is not tied to one client application.
 
-AWS EC2 is the original tested VPS reference. It is not required infrastructure; the same server architecture can be used with other Ubuntu VPS providers that allow inbound UDP traffic.
-
 ## Contents
 
 - [Status](#status)
