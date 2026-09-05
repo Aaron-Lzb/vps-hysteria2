@@ -46,7 +46,6 @@ The `main` branch also contains unreleased maintenance UX work, including color-
 - Client-neutral connection model
 - Maintained Shadowrocket split-routing example
 - English and Simplified Chinese documentation
-- Public examples that use placeholders instead of secrets
 
 ## Architecture
 
