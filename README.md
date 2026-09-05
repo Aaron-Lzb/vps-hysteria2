@@ -89,8 +89,6 @@ Provider product names, firewall interfaces, and static-IP features differ. The 
 
 New to VPS hosting, domains, DNS, or SSH? Follow the [step-by-step beginner guide](docs/beginner-guide.md), from choosing a server and buying a domain to connecting a client on your platform. No prior Linux experience or Apple device is required.
 
-The quick start below is a summary for readers already comfortable with a server terminal.
-
 ## Requirements
 
 Before deployment, prepare:
