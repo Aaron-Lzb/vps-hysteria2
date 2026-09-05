@@ -72,7 +72,9 @@ VPS 提供 Ubuntu、公网地址和防火墙；Hysteria2 负责认证及加密�
 
 ## 零基础使用说明
 
-如果你没有编程或 Linux 经验，请直接阅读[零基础使用说明：搭建个人 Hysteria2 节点](docs/zh-CN/beginner-guide.md)。它从购买 VPS、设置域名和防火墙开始，逐步说明服务器安装、证书申请、Shadowrocket 配置、维护和排错。
+如果你没有 VPS、域名、DNS 或 SSH 经验，请阅读[零基础使用说明：搭建个人 Hysteria2 节点](docs/zh-CN/beginner-guide.md)。它从选购 VPS 和域名开始，逐步说明服务器安装、证书申请，以及各平台的客户端连接、维护和排错；不要求 Linux 经验或 Apple 设备。
+
+下面的快速开始是面向已熟悉服务器终端读者的摘要。
 
 本项目创建的是自用 Hysteria2 加密代理节点，不包含商业“机场”所需的用户系统、订阅、套餐、流量计费、支付或防滥用功能。
 
@@ -84,9 +86,9 @@ VPS 提供 Ubuntu、公网地址和防火墙；Hysteria2 负责认证及加密�
 - 可用于域名解析的公网地址
 - 可以修改 DNS 记录的域名
 - 云平台防火墙允许 UDP 443
-- 使用 HTTP-01 申请证书时可用的 TCP 80
+- 使用 HTTP-01 申请及后续续期时可达的 TCP 80
 - 一个明确支持 Hysteria2 的客户端版本
-- 基本 Linux 命令行操作能力
+- SSH 登录条件；新手指南会说明首次登录与终端命令
 
 建议使用稳定公网 IP，避免 VPS 重启或重新分配地址后导致域名解析仍指向旧地址。
 
@@ -175,15 +177,15 @@ hysteria-check <PUBLIC_IP>
 
 本项目的 Hysteria2 服务端与客户端品牌解耦。只要客户端当前版本实现了 Hysteria2，并能配置域名、UDP 端口、密码认证和 TLS/SNI，就可以按照对应客户端文档尝试连接。
 
-| 客户端或客户端系列 | 本项目说明 |
+| 平台 | 客户端示例 |
 | --- | --- |
-| Shadowrocket | 提供详细客户端文档和现有分流配置 |
-| Mihomo / Clash.Meta 兼容客户端 | Mihomo 提供 Hysteria2 代理类型；按客户端及内核版本文档配置 |
-| FlClash | 基于 ClashMeta；需要确认所带内核版本并使用兼容的 Mihomo 配置 |
-| Surge | 本项目暂不提供配置，也不默认承诺兼容；请先确认当前版本的 Hysteria2 支持情况 |
-| 其他 Hysteria2 客户端 | 按客户端官方文档填写与服务端一致的连接参数 |
+| iOS / iPadOS | Hiddify、Shadowrocket |
+| macOS | Hiddify、FlClash |
+| Android | Hiddify、FlClash |
+| Windows | Hiddify、FlClash |
+| Linux | Hiddify、FlClash，或官方 Hysteria 命令行客户端 |
 
-这里列出产品名称不代表所有历史版本都支持 Hysteria2。除 Shadowrocket 外，本项目暂不维护可直接导入的客户端配置；详细指南会在配置得到验证后再添加。
+官方来源、下载入口、连接字段和测试步骤见[新手指南的客户端部分](docs/zh-CN/beginner-guide.md#十二选择并配置客户端)。任何兼容 Hysteria2 的客户端原则上都能连接，与操作系统或品牌无关。这不是项目逐一完成设备测试的名单：安装时确认当前版本支持情况，Surge 等其他客户端也一样。FlClash 使用 ClashMeta，应按所带核心的配置要求操作。Shadowrocket 继续作为一个项目维护的配置示例。
 
 ### Shadowrocket
 
@@ -339,6 +341,7 @@ vps-hysteria2/
 ├── docs/
 │   ├── architecture.md
 │   ├── aws-deployment.md
+│   ├── beginner-guide.md
 │   ├── troubleshooting.md
 │   ├── clients/shadowrocket.md
 │   └── zh-CN/
@@ -375,6 +378,7 @@ vps-hysteria2/
 English:
 
 - [English README](README.md)
+- [Beginner setup guide](docs/beginner-guide.md)
 - [System architecture](docs/architecture.md)
 - [AWS reference VPS deployment](docs/aws-deployment.md)
 - [Troubleshooting guide](docs/troubleshooting.md)

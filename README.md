@@ -16,6 +16,7 @@ Deploy Hysteria2 on a VPS and connect using any compatible Hysteria2 client. Sha
 - [Features](#features)
 - [Architecture](#architecture)
 - [Supported VPS providers](#supported-vps-providers)
+- [Beginner guide](#beginner-guide)
 - [Requirements](#requirements)
 - [Quick start](#quick-start)
 - [Client configuration](#client-configuration)
@@ -84,6 +85,12 @@ The server framework may be deployed on:
 
 Provider product names, firewall interfaces, and static-IP features differ. The [AWS deployment guide](docs/aws-deployment.md) remains the original tested reference; translate its network requirements to the selected provider.
 
+## Beginner guide
+
+New to VPS hosting, domains, DNS, or SSH? Follow the [step-by-step beginner guide](docs/beginner-guide.md), from choosing a server and buying a domain to connecting a client on your platform. No prior Linux experience or Apple device is required.
+
+The quick start below is a summary for readers already comfortable with a server terminal.
+
 ## Requirements
 
 Before deployment, prepare:
@@ -93,11 +100,11 @@ Before deployment, prepare:
 - A registered domain with an A or AAAA record pointing to the VPS
 - A TLS certificate issued through Certbot
 - A client version that explicitly supports Hysteria2
-- Basic Linux command-line knowledge
+- SSH access; the beginner guide explains your first login and terminal commands
 
 A stable public IP is recommended so a VPS restart or address reassignment does not leave the domain pointing to an outdated address.
 
-TCP 80 may be needed temporarily for the HTTP-01 certificate challenge. Restrict SSH access to trusted source addresses whenever possible.
+TCP 80 must be reachable for both issuance and later renewals when using this guide's HTTP-01 method. Restrict SSH access to trusted source addresses whenever possible.
 
 ## Quick start
 
@@ -155,15 +162,15 @@ Client interfaces and configuration syntax vary. Follow the documentation for th
 
 The Hysteria2 server is client-neutral. A client is suitable when its current version implements Hysteria2 and supports the connection fields used by this deployment: server domain, UDP port, password authentication, and TLS/SNI verification.
 
-| Client or client family | Project guidance |
+| Platform | Client examples |
 | --- | --- |
-| Shadowrocket | Documented client example with an included split-routing configuration |
-| Mihomo / Clash.Meta-compatible clients | Mihomo provides a Hysteria2 proxy type; use the documentation for the client and bundled core version |
-| FlClash | ClashMeta-based client; verify the bundled core/version and use compatible Mihomo configuration guidance |
-| Surge | No configuration is supplied here; verify Hysteria2 support in the installed version before use |
-| Other Hysteria2 clients | Use the client vendor's current documentation and match the server connection fields |
+| iOS / iPadOS | Hiddify, Shadowrocket |
+| macOS | Hiddify, FlClash |
+| Android | Hiddify, FlClash |
+| Windows | Hiddify, FlClash |
+| Linux | Hiddify, FlClash, or the official Hysteria CLI |
 
-The repository does not claim that every version of every named client supports Hysteria2. Detailed guides for clients other than Shadowrocket may be added after their configuration is verified.
+See the [beginner guide's client steps](docs/beginner-guide.md#12-choose-and-configure-a-client) for official sources, downloads, connection fields, and testing. Any compatible Hysteria2 client can connect regardless of OS or brand. Examples are not a project-wide device test matrix: verify support in the installed version, including for other clients such as Surge. FlClash uses ClashMeta; follow the bundled core's configuration requirements. Shadowrocket remains one maintained configuration example.
 
 ### Shadowrocket
 
@@ -278,6 +285,7 @@ The updater follows the repository `main` branch rather than the latest tagged R
 
 English documentation:
 
+- [Beginner setup guide](docs/beginner-guide.md)
 - [System architecture](docs/architecture.md)
 - [AWS reference VPS deployment](docs/aws-deployment.md)
 - [Troubleshooting, deployment, and security checklists](docs/troubleshooting.md)
@@ -286,6 +294,7 @@ English documentation:
 Simplified Chinese documentation:
 
 - [中文项目主页](README_CN.md)
+- [零基础使用说明](docs/zh-CN/beginner-guide.md)
 - [系统架构](docs/zh-CN/architecture.md)
 - [VPS 部署指南](docs/zh-CN/vps-deployment.md)
 - [故障排查指南](docs/zh-CN/troubleshooting.md)
