@@ -156,6 +156,8 @@ In a compatible Hysteria2 client, configure the server domain, UDP port `443`, p
 
 Client interfaces and configuration syntax vary. Follow the documentation for the installed client version. This repository currently includes a detailed [Shadowrocket guide](docs/clients/shadowrocket.md) and split-routing example.
 
+For the first connection, verify the node works in global proxy mode before adding complex routing rules.
+
 ## Client configuration
 
 The Hysteria2 server is client-neutral. A client is suitable when its current version implements Hysteria2 and supports the connection fields used by this deployment: server domain, UDP port, password authentication, and TLS/SNI verification.
