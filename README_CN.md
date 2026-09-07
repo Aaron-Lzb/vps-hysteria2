@@ -90,6 +90,8 @@ VPS 提供 Ubuntu、公网地址和防火墙；Hysteria2 负责认证及加密�
 
 建议使用稳定公网 IP，避免 VPS 重启或重新分配地址后导致域名解析仍指向旧地址。
 
+开始部署前，建议先确认域名已经正确解析到 VPS 公网 IP，再继续申请证书和安装服务。
+
 AWS、Oracle Cloud、Google Cloud、Azure、DigitalOcean、Vultr 和其他 Linux VPS 都可能适用。各平台的防火墙和静态公网 IP 产品名称不同。
 
 ## 快速开始

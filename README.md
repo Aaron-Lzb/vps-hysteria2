@@ -102,6 +102,8 @@ Before deployment, prepare:
 
 A stable public IP is recommended so a VPS restart or address reassignment does not leave the domain pointing to an outdated address.
 
+Before deployment, verify that the domain already resolves to the VPS public IP before requesting certificates or installing the service.
+
 TCP 80 must be reachable for both issuance and later renewals when using this guide's HTTP-01 method. Restrict SSH access to trusted source addresses whenever possible.
 
 ## Quick start
