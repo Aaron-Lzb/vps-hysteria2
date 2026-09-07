@@ -316,6 +316,8 @@ Configuration references:
 
 For diagnosis, use the [troubleshooting guide](docs/troubleshooting.md) and check DNS, network firewalls, UDP 443, the service, TLS, authentication, and client configuration in order.
 
+If you are new to self-hosting, start with the [beginner guide](docs/beginner-guide.md) before deploying, and test the node with a single client before adding more devices.
+
 ## License
 
 See [LICENSE](LICENSE).
