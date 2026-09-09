@@ -114,6 +114,8 @@ TCP 80 must be reachable for both issuance and later renewals when using this gu
 
 Create an Ubuntu VPS, assign a stable public IP when available, allow inbound UDP 443, and point `YOUR_DOMAIN` to the server. AWS users can follow the [reference AWS deployment guide](docs/aws-deployment.md).
 
+The returned IP should match the VPS public IP.
+
 ### 2. Install Hysteria2
 
 Run the installer as root from a trusted checkout:

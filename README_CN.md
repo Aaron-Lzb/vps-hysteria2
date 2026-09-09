@@ -106,6 +106,8 @@ AWS、Oracle Cloud、Google Cloud、Azure、DigitalOcean、Vultr 和其他 Linux
 dig YOUR_DOMAIN
 ```
 
+返回结果中的 IP 应与 VPS 公网 IP 一致。
+
 AWS 用户可参考[中文 VPS 部署指南](docs/zh-CN/vps-deployment.md)。
 
 ### 2. 安装 Hysteria2
