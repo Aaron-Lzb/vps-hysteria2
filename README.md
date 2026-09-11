@@ -176,7 +176,7 @@ The Hysteria2 server is client-neutral. A client is suitable when its current ve
 | Windows | Hiddify, FlClash |
 | Linux | Hiddify, FlClash, or the official Hysteria CLI |
 
-See the [beginner guide's client steps](docs/beginner-guide.md#12-choose-and-configure-a-client) for official sources, downloads, connection fields, and testing. Any compatible Hysteria2 client can connect regardless of OS or brand. Examples are not a project-wide device test matrix: verify support in the installed version, including for other clients such as Surge. FlClash uses ClashMeta; follow the bundled core's configuration requirements. Shadowrocket remains one maintained configuration example.
+See the [beginner guide's client steps](docs/beginner-guide.md#12-choose-and-configure-a-client) for official sources, downloads, connection fields, and testing. Any compatible Hysteria2 client can connect regardless of OS or brand. FlClash uses ClashMeta; follow the bundled core's configuration requirements. Shadowrocket remains one maintained configuration example.
 
 ### Shadowrocket
 

@@ -191,7 +191,7 @@ hysteria-check <PUBLIC_IP>
 | Windows | Hiddify、FlClash |
 | Linux | Hiddify、FlClash，或官方 Hysteria 命令行客户端 |
 
-官方来源、下载入口、连接字段和测试步骤见[新手指南的客户端部分](docs/zh-CN/beginner-guide.md#十二选择并配置客户端)。任何兼容 Hysteria2 的客户端原则上都能连接，与操作系统或品牌无关。这不是项目逐一完成设备测试的名单：安装时确认当前版本支持情况，Surge 等其他客户端也一样。FlClash 使用 ClashMeta，应按所带核心的配置要求操作。Shadowrocket 继续作为一个项目维护的配置示例。
+官方来源、下载入口、连接字段和测试步骤见[新手指南的客户端部分](docs/zh-CN/beginner-guide.md#十二选择并配置客户端)。任何兼容 Hysteria2 的客户端原则上都能连接，与操作系统或品牌无关。FlClash 使用 ClashMeta，应按所带核心的配置要求操作。Shadowrocket 继续作为一个项目维护的配置示例。
 
 ### Shadowrocket
 
