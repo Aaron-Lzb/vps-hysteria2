@@ -241,6 +241,8 @@ Run the status helper on the server:
 hysteria-check
 ```
 
+If the key checks pass, no further action is normally required.
+
 For a routine VPS/Hysteria2 status check with the most complete visibility, use the following recommended command; it remains read-only:
 
 ```bash
