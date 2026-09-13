@@ -196,6 +196,8 @@ Mihomo documents a native `hysteria2` proxy type. Configuration details can chan
 
 The server example listens on UDP 443, reads Let's Encrypt certificates from `/etc/letsencrypt/live/YOUR_DOMAIN/`, and authenticates with `YOUR_PASSWORD`.
 
+- `YOUR_PASSWORD`: Must exactly match the client password; never commit the real password to GitHub.
+
 The default deployment uses Hysteria2 over standard QUIC/TLS on UDP 443 and configures HTTP masquerading to provide a normal web response for non-Hysteria2 HTTP requests. Additional protocol obfuscation such as Salamander is not enabled by default and should be considered only when required by the network environment.
 
 The established server paths remain unchanged:
