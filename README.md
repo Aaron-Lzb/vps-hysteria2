@@ -154,6 +154,8 @@ sudo systemctl enable --now hysteria-server
 sudo systemctl status hysteria-server
 ```
 
+Before continuing, confirm that the service status shows active (running).
+
 After the first deployment, run `hysteria-check` before configuring a client to confirm the service and listener state.
 
 ### 5. Configure a client
