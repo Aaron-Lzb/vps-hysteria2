@@ -108,6 +108,8 @@ Unless required, do not expose the SSH port to all public IP addresses.
 
 TCP 80 must be reachable for both issuance and later renewals when using this guide's HTTP-01 method. Restrict SSH access to trusted source addresses whenever possible.
 
+TCP 80 is mainly used for Certbot HTTP-01 validation; it is not the Hysteria2 service port.
+
 ## Quick start
 
 ### 1. Prepare the VPS
