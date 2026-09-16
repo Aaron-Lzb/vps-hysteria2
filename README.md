@@ -93,7 +93,7 @@ New to VPS hosting, domains, DNS, or SSH? Follow the [step-by-step beginner guid
 
 Before deployment, prepare:
 
-- An Ubuntu 22.04 or 24.04 VPS with a public IP address
+- An Ubuntu 22.04 or 24.04 VPS with a public IPv4 address
 - Permission to allow inbound UDP 443 in the provider firewall
 - A registered domain with an A or AAAA record pointing to the VPS
 - A TLS certificate issued through Certbot
