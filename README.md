@@ -67,7 +67,7 @@ Compatible Hysteria2 client
        Internet
 ```
 
-The VPS supplies Ubuntu, a public IP address, firewall controls, and UDP 443 connectivity. Hysteria2 provides authentication and encrypted proxy transport. The client supplies connection details and, where supported, routing and DNS policy.
+The VPS supplies Ubuntu, a public IPv4 address, firewall controls, and UDP 443 connectivity. Hysteria2 provides authentication and encrypted proxy transport. The client supplies connection details and, where supported, routing and DNS policy.
 
 See the [architecture guide](docs/architecture.md) for component boundaries and traffic flow.
 
@@ -100,9 +100,9 @@ Before deployment, prepare:
 - A client version that explicitly supports Hysteria2
 - SSH access; the beginner guide explains your first login and terminal commands
 
-A stable public IP is recommended so a VPS restart or address reassignment does not leave the domain pointing to an outdated address.
+A stable public IPv4 is recommended so a VPS restart or address reassignment does not leave the domain pointing to an outdated address.
 
-Before deployment, verify that the domain already resolves to the VPS public IP before requesting certificates or installing the service.
+Before deployment, verify that the domain already resolves to the VPS public IPv4 before requesting certificates or installing the service.
 
 Unless required, do not expose the SSH port to all public IP addresses.
 
@@ -114,9 +114,9 @@ TCP 80 is mainly used for Certbot HTTP-01 validation; it is not the Hysteria2 se
 
 ### 1. Prepare the VPS
 
-Create an Ubuntu VPS, assign a stable public IP when available, allow inbound UDP 443, and point `YOUR_DOMAIN` to the server. AWS users can follow the [reference AWS deployment guide](docs/aws-deployment.md).
+Create an Ubuntu VPS, assign a stable public IPv4 when available, allow inbound UDP 443, and point `YOUR_DOMAIN` to the server. AWS users can follow the [reference AWS deployment guide](docs/aws-deployment.md).
 
-The returned IP should match the VPS public IP.
+The returned IP should match the VPS public IPv4.
 
 ### 2. Install Hysteria2
 

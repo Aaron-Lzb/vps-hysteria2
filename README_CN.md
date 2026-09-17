@@ -66,7 +66,7 @@
        Internet
 ```
 
-VPS 提供 Ubuntu、公网地址和防火墙；Hysteria2 负责认证及加密代理传输；客户端负责填写连接参数，并在支持时管理 DNS 和分流规则。
+VPS 提供 Ubuntu、公网 IPv4 和防火墙；Hysteria2 负责认证及加密代理传输；客户端负责填写连接参数，并在支持时管理 DNS 和分流规则。
 
 客户端可以更换，但服务端的域名、UDP 端口、密码和 TLS 证书必须与客户端配置匹配。详见[中文系统架构](docs/zh-CN/architecture.md)。
 
@@ -90,25 +90,25 @@ VPS 提供 Ubuntu、公网地址和防火墙；Hysteria2 负责认证及加密�
 
 TCP 80 主要用于 Certbot HTTP-01 验证，不是 Hysteria2 的服务端口。
 
-建议使用稳定公网 IP，避免 VPS 重启或重新分配地址后导致域名解析仍指向旧地址。
+建议使用稳定公网 IPv4，避免 VPS 重启或重新分配地址后导致域名解析仍指向旧地址。
 
-开始部署前，建议先确认域名已经正确解析到 VPS 公网 IP，再继续申请证书和安装服务。
+开始部署前，建议先确认域名已经正确解析到 VPS 公网 IPv4，再继续申请证书和安装服务。
 
 如无特殊需要，SSH 端口不要对所有公网地址开放。
 
-AWS、Oracle Cloud、Google Cloud、Azure、DigitalOcean、Vultr 和其他 Linux VPS 都可能适用。各平台的防火墙和静态公网 IP 产品名称不同。
+AWS、Oracle Cloud、Google Cloud、Azure、DigitalOcean、Vultr 和其他 Linux VPS 都可能适用。各平台的防火墙和静态公网 IPv4 产品名称不同。
 
 ## 快速开始
 
 ### 1. 准备 VPS 和域名
 
-创建 Ubuntu VPS，配置稳定公网地址，在云防火墙中允许 UDP 443，并让 `YOUR_DOMAIN` 指向 `YOUR_SERVER_IP`。
+创建 Ubuntu VPS，配置稳定公网 IPv4，在云防火墙中允许 UDP 443，并让 `YOUR_DOMAIN` 指向 `YOUR_SERVER_IP`。
 
 ```bash
 dig YOUR_DOMAIN
 ```
 
-返回结果中的 IP 应与 VPS 公网 IP 一致。
+返回结果中的 IP 应与 VPS 公网 IPv4 一致。
 
 AWS 用户可参考[中文 VPS 部署指南](docs/zh-CN/vps-deployment.md)。
 
