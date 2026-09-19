@@ -96,6 +96,8 @@ TCP 80 主要用于 Certbot HTTP-01 验证，不是 Hysteria2 的服务端口。
 
 如无特殊需要，SSH 端口不要对所有公网地址开放。
 
+建议仅允许自己的可信公网 IPv4 访问 SSH。
+
 AWS、Oracle Cloud、Google Cloud、Azure、DigitalOcean、Vultr 和其他 Linux VPS 都可能适用。各平台的防火墙和静态公网 IPv4 产品名称不同。
 
 ## 快速开始
