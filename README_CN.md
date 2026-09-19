@@ -112,6 +112,8 @@ dig YOUR_DOMAIN
 
 返回结果中的 IP 应与 VPS 公网 IPv4 一致。
 
+如果 IP 不一致，请先检查 DNS A 记录并等待解析生效。
+
 AWS 用户可参考[中文 VPS 部署指南](docs/zh-CN/vps-deployment.md)。
 
 ### 2. 安装 Hysteria2

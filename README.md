@@ -120,6 +120,8 @@ Create an Ubuntu VPS, assign a stable public IPv4 when available, allow inbound 
 
 The returned IP should match the VPS public IPv4.
 
+If the IP does not match, check the DNS A record and wait for DNS propagation.
+
 ### 2. Install Hysteria2
 
 Run the installer as root from a trusted checkout:
