@@ -104,7 +104,7 @@ AWS、Oracle Cloud、Google Cloud、Azure、DigitalOcean、Vultr 和其他 Linux
 
 ### 1. 准备 VPS 和域名
 
-创建 Ubuntu VPS，配置稳定公网 IPv4，在云防火墙中允许 UDP 443，并让 `YOUR_DOMAIN` 指向 `YOUR_SERVER_IP`。
+创建 Ubuntu VPS，配置稳定公网 IPv4，在云防火墙中允许 UDP 443，并在使用 Certbot HTTP-01 验证时允许 TCP 80，并让 `YOUR_DOMAIN` 指向 `YOUR_SERVER_IP`。
 
 ```bash
 dig YOUR_DOMAIN

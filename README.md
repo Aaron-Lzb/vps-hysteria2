@@ -116,7 +116,7 @@ TCP 80 is mainly used for Certbot HTTP-01 validation; it is not the Hysteria2 se
 
 ### 1. Prepare the VPS
 
-Create an Ubuntu VPS, assign a stable public IPv4 when available, allow inbound UDP 443, and point `YOUR_DOMAIN` to the server. AWS users can follow the [reference AWS deployment guide](docs/aws-deployment.md).
+Create an Ubuntu VPS, assign a stable public IPv4 when available, allow inbound UDP 443 and TCP 80 when using Certbot HTTP-01 validation, and point `YOUR_DOMAIN` to the server. AWS users can follow the [reference AWS deployment guide](docs/aws-deployment.md).
 
 The returned IP should match the VPS public IPv4.
 
